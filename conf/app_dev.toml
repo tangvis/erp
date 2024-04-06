@@ -1,0 +1,12 @@
+name = test
+
+[mysql]
+dsn = "127.0.0.1"
+max_idle = 10
+max_open = 100
+max_idle_time = "10s"
+max_life_time = "1h"
+
+[server]
+host = 0.0.0.0
+port = 8081

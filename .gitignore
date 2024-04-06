@@ -1,0 +1,14 @@
+.idea/
+.DS_Store
+*.dll
+*.so
+*.out
+bin
+log
+lumberjack.lock
+*.log
+*.log.*
+go.sum
+mock_*.go
+*.pyc
+cmd/**/*_gen.go

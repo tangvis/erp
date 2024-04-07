@@ -17,6 +17,6 @@ func NewPing(
 	}
 }
 
-func (p *Ping) Ping() {
-	panic("ping")
+func (p *Ping) Ping() string {
+	return "pong"
 }

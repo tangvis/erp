@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tangvis/erp/conf/config"
 	ctxUtil "github.com/tangvis/erp/libs/context"
 	"github.com/tangvis/erp/libs/ecode"
 	logutil "github.com/tangvis/erp/libs/log"
@@ -82,9 +83,11 @@ func (engine *Engine) beforeWriteBody(ctx *HttpContext) {
 
 func (engine *Engine) toResponse(ctx *HttpContext, data interface{}, err error) JSONResponse {
 	resp := JSONResponse{
-		TranceID: ctx.GetTraceID(),
-		Data:     data,
-		Message:  "Success",
+		Data:    data,
+		Message: "Success",
+	}
+	if config.Config.GetEnableResponseTraceID() {
+		resp.TranceID = ctx.GetTraceID()
 	}
 	// 如果是空数据不返回nil，而是返回一个空的map给前端
 	if IsNilValue(data) {

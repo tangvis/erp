@@ -1,5 +1,5 @@
 package service
 
 type APP interface {
-	Ping()
+	Ping() string
 }

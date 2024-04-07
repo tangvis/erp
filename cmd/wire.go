@@ -25,7 +25,9 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	}
 }
 
-func initializeApplication(dep *dependence) (*application, error) {
+func initializeApplication(
+	dep *dependence,
+) (*application, error) {
 	wire.Build(
 		ping.APISet,
 		engine.EngineSet,

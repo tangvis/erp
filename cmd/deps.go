@@ -1,9 +1,6 @@
 package main
 
 import (
-	"github.com/spf13/viper"
-	"os"
-
 	"github.com/tangvis/erp/agent/mysql"
 	getter "github.com/tangvis/erp/conf/config"
 	logutil "github.com/tangvis/erp/libs/log"
@@ -20,10 +17,10 @@ func newDependence() (*dependence, error) {
 }
 
 func (d *dependence) initDB() {
-	if config == nil {
+	if getter.Config == nil {
 		panic("config not init yet")
 	}
-	dbConfig, err := config.GetMySQLConfig()
+	dbConfig, err := getter.Config.GetMySQLConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -34,32 +31,6 @@ func (d *dependence) initDB() {
 	d.DB = db
 }
 
-var config getter.Getter
-
-func initConfig() {
-	vp := initViper()
-	config = getter.NewConfigGetter(vp)
-}
-
-func initViper() *viper.Viper {
-	env := os.Getenv(getter.EnvKey)
-	vp := viper.New()
-	vp.SetConfigName("app_" + env)
-	vp.AddConfigPath("./conf/")
-	vp.SetConfigType("toml")
-	if err := vp.ReadInConfig(); err != nil {
-		//if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-		//	panic(err)
-		//} else {
-		//	panic(err)
-		//}
-		panic(err)
-	}
-	vp.WatchConfig()
-
-	return vp
-}
-
 func initLogger() {
 	logConfig := logutil.NewConfig()
 	logConfig.DisableJSONFormat()
@@ -68,6 +39,6 @@ func initLogger() {
 }
 
 func initGlobalResources() {
-	initConfig()
+	getter.InitConfig()
 	initLogger()
 }

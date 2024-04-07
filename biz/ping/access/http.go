@@ -29,5 +29,5 @@ func (c *Controller) URLPatterns() []engine.Router {
 }
 
 func (c *Controller) Ping(ctx engine.Context) (interface{}, error) {
-	panic("")
+	return c.app.Ping(), nil
 }

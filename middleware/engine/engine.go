@@ -26,7 +26,7 @@ type Context interface {
 }
 
 type HTTPEngine interface {
-	JSON(handler HTTPAPIJSONHandler) GinHandler
+	JSON(handler HTTPAPIJSONHandler) gin.HandlerFunc
 }
 
 type HttpContext struct {
@@ -59,7 +59,10 @@ func (c *HttpContext) GetTraceID() string {
 }
 
 type Engine struct {
-	logger logutil.Logger
+}
+
+func NewEngine() HTTPEngine {
+	return &Engine{}
 }
 
 func (engine *Engine) startRequest(ctx *HttpContext) {
@@ -103,7 +106,7 @@ func (engine *Engine) json(ctx *HttpContext, data interface{}, err error) {
 	ctx.PureJSON(200, resp)
 }
 
-func (engine *Engine) OpenAPIJSON(handler HTTPAPIJSONHandler) GinHandler {
+func (engine *Engine) OpenAPIJSON(handler HTTPAPIJSONHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		rawHandler := func(ctx *HttpContext) error {
 			resp, err := handler(ctx)
@@ -126,6 +129,7 @@ func (engine *Engine) handleRaw(ctx *HttpContext, handler RawHandler) {
 		if ev := recover(); ev != nil {
 			stack := make([]byte, 16*1024)
 			runtime.Stack(stack, false)
+			//log.Printf("%s", stack)
 			logutil.CtxErrorF(ctx, "[PANIC]%+v, %s", ev, stack)
 			engine.String(ctx, http.StatusInternalServerError, "panic")
 		}
@@ -143,7 +147,7 @@ func (engine *Engine) handleJSON(ctx *HttpContext, handler HTTPAPIJSONHandler) {
 	engine.handleRaw(ctx, rawHandler)
 }
 
-func (engine *Engine) JSON(handler HTTPAPIJSONHandler) GinHandler {
+func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		engine.handleJSON(NewHttpContext(ctx), handler)
 	}
@@ -153,7 +157,7 @@ type Controller interface {
 	URLPatterns() []Router
 }
 
-func NewRouter(method, url string, handler GinHandler) Router {
+func NewRouter(method, url string, handler gin.HandlerFunc) Router {
 	return Router{
 		Method:  method,
 		URL:     url,

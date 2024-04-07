@@ -3,7 +3,7 @@ package access
 import (
 	"net/http"
 
-	"github.com/tangvis/erp/app/ping/service"
+	"github.com/tangvis/erp/biz/ping/service"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -24,7 +24,7 @@ func NewController(
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
-		engine.NewRouter(http.MethodPost, "/ping", c.engine.JSON(c.Ping)),
+		engine.NewRouter(http.MethodGet, "/ping", c.engine.JSON(c.Ping)),
 	}
 }
 

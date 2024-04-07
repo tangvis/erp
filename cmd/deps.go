@@ -9,6 +9,31 @@ import (
 	logutil "github.com/tangvis/erp/libs/log"
 )
 
+type dependence struct {
+	DB *mysql.DB
+}
+
+func newDependence() (*dependence, error) {
+	ret := &dependence{}
+	ret.initDB()
+	return ret, nil
+}
+
+func (d *dependence) initDB() {
+	if config == nil {
+		panic("config not init yet")
+	}
+	dbConfig, err := config.GetMySQLConfig()
+	if err != nil {
+		panic(err)
+	}
+	db, err := mysql.NewMySQL(dbConfig)
+	if err != nil {
+		panic(err)
+	}
+	d.DB = db
+}
+
 var config getter.Getter
 
 func initConfig() {
@@ -20,7 +45,7 @@ func initViper() *viper.Viper {
 	env := os.Getenv(getter.EnvKey)
 	vp := viper.New()
 	vp.SetConfigName("app_" + env)
-	vp.AddConfigPath("../conf/")
+	vp.AddConfigPath("./conf/")
 	vp.SetConfigType("toml")
 	if err := vp.ReadInConfig(); err != nil {
 		//if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -35,24 +60,14 @@ func initViper() *viper.Viper {
 	return vp
 }
 
-func initDB() *mysql.DB {
-	if config == nil {
-		panic("config not init yet")
-	}
-	dbConfig, err := config.GetMySQLConfig()
-	if err != nil {
-		panic(err)
-	}
-	db, err := mysql.NewMySQL(dbConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	return db
-}
-
 func initLogger() {
 	logConfig := logutil.NewConfig()
-	// todo 日志配置
+	logConfig.DisableJSONFormat()
+	logConfig.SetFileOut("./logs", "test_log", 1, 2)
 	logutil.InitLogger(logConfig)
+}
+
+func initGlobalResources() {
+	initConfig()
+	initLogger()
 }

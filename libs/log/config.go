@@ -30,7 +30,7 @@ func NewConfig() *Config {
 		stacktraceLevel: "panic",
 		atomicLevel:     zap.NewAtomicLevel(),
 		projectName:     "",
-		callerSkip:      1,
+		callerSkip:      2,
 		jsonFormat:      true,
 		consoleOut:      true,
 		fileOut: &fileOut{

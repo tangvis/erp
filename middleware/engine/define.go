@@ -7,7 +7,6 @@ const (
 )
 
 type HTTPAPIJSONHandler func(ctx Context) (interface{}, error)
-type GinHandler func(ctx *gin.Context)
 type RawHandler func(ctx *HttpContext) error
 
 type JSONResponse struct {
@@ -20,5 +19,5 @@ type JSONResponse struct {
 type Router struct {
 	Method  string
 	URL     string
-	Handler GinHandler
+	Handler gin.HandlerFunc
 }

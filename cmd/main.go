@@ -1,18 +1,21 @@
 package main
 
-import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-)
+import "github.com/gin-gonic/gin"
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run()
-
+	ginEngine := gin.New()
+	gin.SetMode(gin.ReleaseMode)
+	initGlobalResources()
+	dep, err := newDependence()
+	if err != nil {
+		panic(err)
+	}
+	app, err := initializeApplication(dep)
+	if err != nil {
+		panic(err)
+	}
+	if err = app.registerHTTP(ginEngine); err != nil {
+		panic(err)
+	}
+	ginEngine.Run()
 }

@@ -109,17 +109,6 @@ func (engine *Engine) json(ctx *HttpContext, data interface{}, err error) {
 	ctx.PureJSON(200, resp)
 }
 
-func (engine *Engine) OpenAPIJSON(handler HTTPAPIJSONHandler) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		rawHandler := func(ctx *HttpContext) error {
-			resp, err := handler(ctx)
-			engine.json(ctx, resp, err)
-			return nil
-		}
-		engine.handleRaw(NewHttpContext(ctx), rawHandler)
-	}
-}
-
 func (engine *Engine) String(ctx *HttpContext, code int, msg string) {
 	engine.beforeWriteBody(ctx)
 	ctx.String(code, msg)
@@ -141,18 +130,14 @@ func (engine *Engine) handleRaw(ctx *HttpContext, handler RawHandler) {
 	_ = handler(ctx) // todo error handle
 }
 
-func (engine *Engine) handleJSON(ctx *HttpContext, handler HTTPAPIJSONHandler) {
-	rawHandler := func(ctx *HttpContext) error {
-		resp, err := handler(ctx)
-		engine.json(ctx, resp, err)
-		return err
-	}
-	engine.handleRaw(ctx, rawHandler)
-}
-
 func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		engine.handleJSON(NewHttpContext(ctx), handler)
+		rawHandler := func(ctx *HttpContext) error {
+			resp, err := handler(ctx)
+			engine.json(ctx, resp, err)
+			return err
+		}
+		engine.handleRaw(NewHttpContext(ctx), rawHandler)
 	}
 }
 

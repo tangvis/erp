@@ -1,12 +1,16 @@
-name = test
-
-[mysql]
-dsn = "127.0.0.1"
-max_idle = 10
-max_open = 100
-max_idle_time = "10s"
-max_life_time = "1h"
+app = "test"
 
 [server]
-host = 0.0.0.0
+host = "0.0.0.0"
 port = 8081
+
+[mysql]
+dsn = "root:root@(localhost:3306)/erp?timeout=5000ms&readTimeout=10s&charset=utf8mb4"
+maxIdle = 10
+maxOpen = 100
+maxIdleTime = "10s"
+maxLifeTime = "1h"
+
+[cache]
+host = "127.0.0.1"
+port = 6379

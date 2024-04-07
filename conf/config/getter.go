@@ -22,11 +22,11 @@ func NewConfigGetter(vp *viper.Viper) Getter {
 
 func (c configGetter) GetMySQLConfig() (mysql.Config, error) {
 	var tempCfg struct {
-		DSN         string
-		MaxIdle     int
-		MaxOpen     int
-		MaxIdleTime string
-		MaxLifeTime string
+		DSN         string `toml:"dsn"`
+		MaxIdle     int    `toml:"max_idle"`
+		MaxOpen     int    `toml:"max_open"`
+		MaxIdleTime string `toml:"max_idle_time"`
+		MaxLifeTime string `toml:"max_life_time"`
 	}
 	if err := c.viper.UnmarshalKey("mysql", &tempCfg); err != nil {
 		return mysql.Config{}, err

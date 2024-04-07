@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"github.com/spf13/viper"
@@ -18,8 +18,8 @@ func initViper() *viper.Viper {
 	env := os.Getenv(getter.EnvKey)
 	vp := viper.New()
 	vp.SetConfigName("app_" + env)
+	vp.AddConfigPath("../conf/")
 	vp.SetConfigType("toml")
-	vp.AddConfigPath("./conf/")
 	if err := vp.ReadInConfig(); err != nil {
 		//if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 		//	panic(err)

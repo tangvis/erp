@@ -1,12 +1,12 @@
 package common
 
 import (
-	"net/http"
-
 	"github.com/tangvis/erp/libs/ecode"
 )
 
 var (
-	ErrConfPanic = ecode.NewErrorConf(http.StatusInternalServerError)
-	ErrPanicHTTP = ErrConfPanic.New("http")
+	// ErrConfPing ping
+	ErrConfPing       = ecode.NewBusinessErrorCode(ecode.Ping, 1)
+	ErrPingFailed     = ecode.NewErrorConf(ErrConfPing)
+	ErrPingFailedTest = ErrPingFailed.New("ping failed test")
 )

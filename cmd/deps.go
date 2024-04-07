@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/spf13/viper"
+	"os"
+
 	"github.com/tangvis/erp/agent/mysql"
 	getter "github.com/tangvis/erp/conf/config"
-	"os"
+	logutil "github.com/tangvis/erp/libs/log"
 )
 
 var config getter.Getter
@@ -47,4 +49,10 @@ func initDB() *mysql.DB {
 	}
 
 	return db
+}
+
+func initLogger() {
+	logConfig := logutil.NewConfig()
+	// todo 日志配置
+	logutil.InitLogger(logConfig)
 }

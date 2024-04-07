@@ -3,13 +3,13 @@ package engine
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strconv"
 	"time"
 
+	ctxUtil "github.com/tangvis/erp/libs/context"
 	"github.com/tangvis/erp/libs/ecode"
 	logutil "github.com/tangvis/erp/libs/log"
 )
@@ -31,20 +31,29 @@ type HTTPEngine interface {
 
 type HttpContext struct {
 	*gin.Context
+
+	Ctx context.Context
+}
+
+func NewHttpContext(ginCtx *gin.Context) *HttpContext {
+	return &HttpContext{
+		Context: ginCtx,
+		Ctx:     context.Background(),
+	}
 }
 
 func (c *HttpContext) GetTraceID() string {
 	// Attempt to get the trace_id from the context
-	traceID := c.GetString(TraceIDKey)
+	traceID := c.GetString(ctxUtil.TraceIDKey)
 	if len(traceID) > 0 {
 		// If it exists, assert the type to string and return it
 		return traceID
 	}
 
 	// If not found, generate a new trace ID
-	newTraceID := uuid.New().String()
+	newTraceID := ctxUtil.GenerateTrace()
 	// Use the Set method to store the trace ID in the context
-	c.Set(TraceIDKey, newTraceID)
+	c.Set(ctxUtil.TraceIDKey, newTraceID)
 	// Return the new trace ID
 	return newTraceID
 }
@@ -55,7 +64,7 @@ type Engine struct {
 
 func (engine *Engine) startRequest(ctx *HttpContext) {
 	ctx.Set(startTimeKey, time.Now())
-	// todo wrap context
+	ctx.Ctx = ctxUtil.AutoWrapContext(ctx.Ctx, ctx.GetTraceID())
 	// 先写入response Header
 	globalID := ctx.GetTraceID()
 	ctx.Writer.Header().Add("x-trace-id", globalID) // 这个key是给前端用的
@@ -101,7 +110,7 @@ func (engine *Engine) OpenAPIJSON(handler HTTPAPIJSONHandler) GinHandler {
 			engine.json(ctx, resp, err)
 			return nil
 		}
-		engine.handleRaw(&HttpContext{ctx}, rawHandler)
+		engine.handleRaw(NewHttpContext(ctx), rawHandler)
 	}
 }
 
@@ -117,7 +126,7 @@ func (engine *Engine) handleRaw(ctx *HttpContext, handler RawHandler) {
 		if ev := recover(); ev != nil {
 			stack := make([]byte, 16*1024)
 			runtime.Stack(stack, false)
-			engine.logger.ErrorF(ctx, "[PANIC]%+v, %s", ev, stack)
+			logutil.CtxErrorF(ctx, "[PANIC]%+v, %s", ev, stack)
 			engine.String(ctx, http.StatusInternalServerError, "panic")
 		}
 	}(time.Now())
@@ -136,7 +145,7 @@ func (engine *Engine) handleJSON(ctx *HttpContext, handler HTTPAPIJSONHandler) {
 
 func (engine *Engine) JSON(handler HTTPAPIJSONHandler) GinHandler {
 	return func(ctx *gin.Context) {
-		engine.handleJSON(&HttpContext{ctx}, handler)
+		engine.handleJSON(NewHttpContext(ctx), handler)
 	}
 }
 

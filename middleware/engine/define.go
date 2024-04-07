@@ -4,7 +4,6 @@ import "github.com/gin-gonic/gin"
 
 const (
 	startTimeKey = "__start_time"
-	TraceIDKey   = "__trace_id"
 )
 
 type HTTPAPIJSONHandler func(ctx Context) (interface{}, error)

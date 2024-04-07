@@ -3,7 +3,6 @@ package context
 import (
 	"context"
 	"github.com/google/uuid"
-	"strings"
 )
 
 const (
@@ -16,7 +15,7 @@ func AutoWrapContext(ctx context.Context, traceID string) context.Context {
 }
 
 func GenerateTrace() string {
-	return strings.ReplaceAll(uuid.NewString(), "-", "")
+	return uuid.NewString()
 }
 
 func GetTranceID(ctx context.Context) string {

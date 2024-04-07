@@ -4,7 +4,6 @@
 *.so
 *.out
 bin
-log
 lumberjack.lock
 *.log
 *.log.*

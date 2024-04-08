@@ -4,20 +4,24 @@ import (
 	"context"
 
 	"github.com/tangvis/erp/agent/mysql"
+	"github.com/tangvis/erp/agent/redis"
 	"github.com/tangvis/erp/biz/ping/service"
 	"github.com/tangvis/erp/common"
 	logutil "github.com/tangvis/erp/libs/log"
 )
 
 type Ping struct {
-	db *mysql.DB
+	db    *mysql.DB
+	cache redis.Cache
 }
 
 func NewPing(
 	db *mysql.DB,
+	cache redis.Cache,
 ) service.APP {
 	return &Ping{
-		db: db,
+		db:    db,
+		cache: cache,
 	}
 }
 

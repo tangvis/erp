@@ -34,6 +34,7 @@ func initializeApplication(
 		wire.FieldsOf(
 			new(*dependence),
 			"DB",
+			"Cache",
 		),
 		wire.Struct(new(application), "*"),
 	)

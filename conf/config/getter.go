@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/tangvis/erp/agent/mysql"
+	"github.com/tangvis/erp/agent/redis"
 )
 
 var Config Getter
@@ -36,12 +37,30 @@ func initViper() *viper.Viper {
 
 type Getter interface {
 	GetMySQLConfig() (mysql.Config, error)
+	GetCacheConfig() (redis.Config, error)
 	GetEnableResponseTraceID() bool
 	GetEnableLogRequest() bool
 }
 
 type configGetter struct {
 	viper *viper.Viper
+}
+
+func (c configGetter) GetCacheConfig() (redis.Config, error) {
+	var tempCfg struct {
+		Addr   string `toml:"addr"`
+		Passwd string `toml:"passwd"`
+		DB     int    `toml:"db"`
+	}
+	if err := c.viper.UnmarshalKey("cache", &tempCfg); err != nil {
+		return redis.Config{}, err
+	}
+
+	return redis.Config{
+		Addr:   tempCfg.Addr,
+		Passwd: tempCfg.Passwd,
+		DB:     tempCfg.DB,
+	}, nil
 }
 
 func NewConfigGetter(vp *viper.Viper) Getter {

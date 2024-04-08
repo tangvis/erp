@@ -2,9 +2,9 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"reflect"
-	"strconv"
 	"time"
 
 	"github.com/tangvis/erp/conf/config"
@@ -71,7 +71,7 @@ func NewEngine() HTTPEngine {
 func beforeWriteBody(ctx *gin.Context) {
 	if startTime := ctx.GetTime(startTimeKey); !startTime.IsZero() {
 		duration := time.Since(startTime)
-		ctx.Writer.Header().Add("x-response-et", strconv.FormatInt(duration.Milliseconds(), 10))
+		ctx.Writer.Header().Add("x-response-et", fmt.Sprintf("%.2f", float64(duration.Microseconds())/1000))
 	}
 }
 

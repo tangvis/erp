@@ -17,4 +17,4 @@ port = 6379
 
 [middleware]
 response_trace_id = true
-log_request = true
+log_request = false

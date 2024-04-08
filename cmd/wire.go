@@ -30,7 +30,7 @@ func initializeApplication(
 ) (*application, error) {
 	wire.Build(
 		ping.APISet,
-		engine.EngineSet,
+		engine.Set,
 		wire.FieldsOf(
 			new(*dependence),
 			"DB",

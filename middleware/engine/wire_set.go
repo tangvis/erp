@@ -4,6 +4,6 @@ import (
 	"github.com/google/wire"
 )
 
-var EngineSet = wire.NewSet(
+var Set = wire.NewSet(
 	NewEngine,
 )

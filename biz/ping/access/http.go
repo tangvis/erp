@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/tangvis/erp/biz/ping/service"
-	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -35,5 +34,5 @@ func (c *Controller) Ping(ctx engine.Context) (interface{}, error) {
 }
 
 func (c *Controller) Error(ctx engine.Context) (interface{}, error) {
-	return nil, common.ErrPingFailedTest
+	return c.app.PingFail(ctx.GetCtx())
 }

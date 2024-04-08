@@ -3,16 +3,13 @@ package engine
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"reflect"
-	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/tangvis/erp/conf/config"
 	ctxUtil "github.com/tangvis/erp/libs/context"
 	"github.com/tangvis/erp/libs/ecode"
-	logutil "github.com/tangvis/erp/libs/log"
 )
 
 type Context interface {
@@ -71,13 +68,6 @@ func NewEngine() HTTPEngine {
 	return &Engine{}
 }
 
-func startRequest(ctx *gin.Context) {
-	ctx.Set(startTimeKey, time.Now())
-	// 先写入response Header
-	globalID := GetTraceID(ctx)
-	ctx.Writer.Header().Add("x-trace-id", globalID) // 这个key是给前端用的
-}
-
 func beforeWriteBody(ctx *gin.Context) {
 	if startTime := ctx.GetTime(startTimeKey); !startTime.IsZero() {
 		duration := time.Since(startTime)
@@ -118,31 +108,15 @@ func String(ctx *gin.Context, code int, msg string) {
 	ctx.String(code, msg)
 }
 
-func PanicWrapper(ctx *gin.Context) {
-	startRequest(ctx)
-	// 业务处理
-	defer func(start time.Time) {
-		if ev := recover(); ev != nil {
-			stack := make([]byte, 16*1024)
-			runtime.Stack(stack, false)
-			logutil.CtxErrorF(ctx, "[PANIC]%+v, %s", ev, stack)
-			String(ctx, http.StatusInternalServerError, "panic")
-		}
-	}(time.Now())
-	ctx.Next()
-}
-
 func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
-	ret := gin.HandlersChain{
-		func(ctx *gin.Context) {
-			resp, err := handler(NewHttpContext(ctx))
-			json(ctx, resp, err)
-			if err != nil {
-				_ = ctx.Error(err)
-			}
-		},
+	coreHandler := func(ctx *gin.Context) {
+		resp, err := handler(NewHttpContext(ctx))
+		json(ctx, resp, err)
+		if err != nil {
+			_ = ctx.Error(err)
+		}
 	}
-	return append(gin.HandlersChain{PanicWrapper}, ret...)
+	return append(gin.HandlersChain{PanicWrapper, LogWrapper}, coreHandler)
 }
 
 type Controller interface {

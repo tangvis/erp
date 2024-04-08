@@ -37,6 +37,7 @@ func initViper() *viper.Viper {
 type Getter interface {
 	GetMySQLConfig() (mysql.Config, error)
 	GetEnableResponseTraceID() bool
+	GetEnableLogRequest() bool
 }
 
 type configGetter struct {
@@ -80,4 +81,8 @@ func (c configGetter) GetMySQLConfig() (mysql.Config, error) {
 
 func (c configGetter) GetEnableResponseTraceID() bool {
 	return c.viper.GetBool("middleware.response_trace_id")
+}
+
+func (c configGetter) GetEnableLogRequest() bool {
+	return c.viper.GetBool("middleware.log_request")
 }

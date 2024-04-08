@@ -24,10 +24,11 @@ type Context interface {
 	ShouldBindJSON(dest interface{}) error
 	Data(code int, contentType string, data []byte)
 	Header(key, value string)
+	GetCtx() context.Context
 }
 
 type HTTPEngine interface {
-	JSON(handler HTTPAPIJSONHandler) gin.HandlerFunc
+	JSON(handler HTTPAPIJSONHandler) gin.HandlersChain
 }
 
 type HttpContext struct {
@@ -36,14 +37,18 @@ type HttpContext struct {
 	Ctx context.Context
 }
 
+func (c *HttpContext) GetCtx() context.Context {
+	return c.Ctx
+}
+
 func NewHttpContext(ginCtx *gin.Context) *HttpContext {
 	return &HttpContext{
 		Context: ginCtx,
-		Ctx:     context.Background(),
+		Ctx:     ctxUtil.AutoWrapContext(context.Background(), GetTraceID(ginCtx)),
 	}
 }
 
-func (c *HttpContext) GetTraceID() string {
+func GetTraceID(c *gin.Context) string {
 	// Attempt to get the trace_id from the context
 	traceID := c.GetString(ctxUtil.TraceIDKey)
 	if len(traceID) > 0 {
@@ -66,28 +71,27 @@ func NewEngine() HTTPEngine {
 	return &Engine{}
 }
 
-func (engine *Engine) startRequest(ctx *HttpContext) {
+func startRequest(ctx *gin.Context) {
 	ctx.Set(startTimeKey, time.Now())
-	ctx.Ctx = ctxUtil.AutoWrapContext(ctx.Ctx, ctx.GetTraceID())
 	// 先写入response Header
-	globalID := ctx.GetTraceID()
+	globalID := GetTraceID(ctx)
 	ctx.Writer.Header().Add("x-trace-id", globalID) // 这个key是给前端用的
 }
 
-func (engine *Engine) beforeWriteBody(ctx *HttpContext) {
+func beforeWriteBody(ctx *gin.Context) {
 	if startTime := ctx.GetTime(startTimeKey); !startTime.IsZero() {
 		duration := time.Since(startTime)
 		ctx.Writer.Header().Add("x-response-et", strconv.FormatInt(duration.Milliseconds(), 10))
 	}
 }
 
-func (engine *Engine) toResponse(ctx *HttpContext, data interface{}, err error) JSONResponse {
+func toResponse(ctx *gin.Context, data interface{}, err error) JSONResponse {
 	resp := JSONResponse{
 		Data:    data,
 		Message: "Success",
 	}
 	if config.Config.GetEnableResponseTraceID() {
-		resp.TranceID = ctx.GetTraceID()
+		resp.TranceID = GetTraceID(ctx)
 	}
 	// 如果是空数据不返回nil，而是返回一个空的map给前端
 	if IsNilValue(data) {
@@ -103,53 +107,56 @@ func (engine *Engine) toResponse(ctx *HttpContext, data interface{}, err error) 
 	return resp
 }
 
-func (engine *Engine) json(ctx *HttpContext, data interface{}, err error) {
-	resp := engine.toResponse(ctx, data, err)
-	engine.beforeWriteBody(ctx)
+func json(ctx *gin.Context, data interface{}, err error) {
+	resp := toResponse(ctx, data, err)
+	beforeWriteBody(ctx)
 	ctx.PureJSON(200, resp)
 }
 
-func (engine *Engine) String(ctx *HttpContext, code int, msg string) {
-	engine.beforeWriteBody(ctx)
+func String(ctx *gin.Context, code int, msg string) {
+	beforeWriteBody(ctx)
 	ctx.String(code, msg)
 }
 
-func (engine *Engine) handleRaw(ctx *HttpContext, handler RawHandler) {
-	engine.startRequest(ctx)
+func PanicWrapper(ctx *gin.Context) {
+	startRequest(ctx)
 	// 业务处理
 	defer func(start time.Time) {
 		if ev := recover(); ev != nil {
 			stack := make([]byte, 16*1024)
 			runtime.Stack(stack, false)
-			//log.Printf("%s", stack)
 			logutil.CtxErrorF(ctx, "[PANIC]%+v, %s", ev, stack)
-			engine.String(ctx, http.StatusInternalServerError, "panic")
+			String(ctx, http.StatusInternalServerError, "panic")
 		}
 	}(time.Now())
-	// 逻辑开始
-	_ = handler(ctx) // todo error handle
+	ctx.Next()
 }
 
-func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		rawHandler := func(ctx *HttpContext) error {
-			resp, err := handler(ctx)
-			engine.json(ctx, resp, err)
-			return err
-		}
-		engine.handleRaw(NewHttpContext(ctx), rawHandler)
+func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
+	ret := gin.HandlersChain{
+		func(ctx *gin.Context) {
+			resp, err := handler(NewHttpContext(ctx))
+			json(ctx, resp, err)
+			if err != nil {
+				_ = ctx.Error(err)
+			}
+		},
 	}
+	return append(gin.HandlersChain{PanicWrapper}, ret...)
 }
 
 type Controller interface {
 	URLPatterns() []Router
 }
 
-func NewRouter(method, url string, handler gin.HandlerFunc) Router {
+func NewRouter(method, url string, handlers gin.HandlersChain) Router {
+	if len(handlers) == 0 {
+		panic("handlers is empty")
+	}
 	return Router{
-		Method:  method,
-		URL:     url,
-		Handler: handler,
+		Method:   method,
+		URL:      url,
+		Handlers: handlers,
 	}
 }
 

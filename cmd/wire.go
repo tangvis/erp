@@ -46,9 +46,9 @@ func (app *application) registerHTTP(ginEngine *gin.Engine) error {
 		for _, router := range v.URLPatterns() {
 			switch router.Method {
 			case http.MethodGet:
-				ginEngine.GET(router.URL, router.Handler)
+				ginEngine.GET(router.URL, router.Handlers...)
 			case http.MethodPost:
-				ginEngine.POST(router.URL, router.Handler)
+				ginEngine.POST(router.URL, router.Handlers...)
 			default:
 				return fmt.Errorf("unsupported http method %s", router.Method)
 			}

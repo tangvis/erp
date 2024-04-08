@@ -70,7 +70,7 @@ func NewReadValueTime3(loc *time.Location, layouts []string) ReadCellValueFunc {
 			}
 			return t, nil
 		}
-		return nil, errors.New("Wrong Date Format")
+		return nil, errors.New("wrong Date Format")
 	}
 }
 

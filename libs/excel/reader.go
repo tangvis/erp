@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xuri/excelize/v2"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"io"
 	"reflect"
 	"strings"
@@ -61,7 +63,7 @@ func (r *ReaderV2) NewSheetReader(sheetName string, options ...SheetReaderOption
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, fmt.Errorf("Sheet %s empty", sheetName)
+		return nil, fmt.Errorf("sheet %s empty", sheetName)
 	}
 	headers, err := rows.Columns()
 	if err != nil {
@@ -104,11 +106,12 @@ type SheetReader struct {
 }
 
 func TitleHeader(reader *SheetReader) error {
+	casesT := cases.Title(language.Chinese)
 	for i, header := range reader.headers {
-		reader.headers[i] = strings.Title(strings.ToLower(header))
+		reader.headers[i] = casesT.String(strings.ToLower(header))
 	}
 	for k, v := range reader.headerMap {
-		reader.headerMap[strings.Title(strings.ToLower(k))] = v
+		reader.headerMap[casesT.String(strings.ToLower(k))] = v
 	}
 	return nil
 }
@@ -258,7 +261,7 @@ func (r *SheetReader) emptyRowsCheck() error {
 			return err
 		}
 		if !r.isEmptyRow(columns) {
-			return fmt.Errorf("Row[%d]: You cannot set row after empty rows", r.GetCurIdx())
+			return fmt.Errorf("row[%d]: You cannot set row after empty rows", r.GetCurIdx())
 		}
 	}
 	return nil

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type ExcelSheetData struct {
+type SheetData struct {
 	Name string
 	Data interface{}
 }
@@ -94,7 +94,7 @@ func explainTagToOption(
 
 func ExportBatchSheet(
 	ctx context.Context,
-	sheets []ExcelSheetData,
+	sheets []SheetData,
 ) (*WriterV2, error) {
 	firstSheet := sheets[0]
 
@@ -135,7 +135,7 @@ func ExportSingleSheet(
 	ctx context.Context,
 	dataSlice interface{},
 ) (*WriterV2, error) {
-	sheets := []ExcelSheetData{
+	sheets := []SheetData{
 		{Name: DefaultSheetName, Data: dataSlice},
 	}
 	return ExportBatchSheet(ctx, sheets)

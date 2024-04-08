@@ -3,8 +3,8 @@ package main
 import "github.com/gin-gonic/gin"
 
 func main() {
-	ginEngine := gin.New()
 	gin.SetMode(gin.ReleaseMode)
+	ginEngine := gin.New()
 	initGlobalResources()
 	dep, err := newDependence()
 	if err != nil {

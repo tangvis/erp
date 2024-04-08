@@ -7,17 +7,17 @@ const (
 )
 
 type HTTPAPIJSONHandler func(ctx Context) (interface{}, error)
-type RawHandler func(ctx *HttpContext) error
+type RawHandler func(ctx *gin.Context) error
 
 type JSONResponse struct {
-	TranceID string      `json:"trance_id"`
 	Code     int         `json:"code"`
 	Message  string      `json:"message"`
 	Data     interface{} `json:"data"`
+	TranceID string      `json:"trance_id"`
 }
 
 type Router struct {
-	Method  string
-	URL     string
-	Handler gin.HandlerFunc
+	Method   string
+	URL      string
+	Handlers gin.HandlersChain
 }

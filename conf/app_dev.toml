@@ -16,4 +16,7 @@ host = "127.0.0.1"
 port = 6379
 
 [middleware]
-response_trace_id = false
+# 是否在response body中写入trace id，response header中的trace id不受此控制
+response_trace_id = true
+# 是否打印http请求和响应日志，前提是接口需要装上log wrapper的middleware
+log_request = false

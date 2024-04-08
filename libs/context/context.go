@@ -11,6 +11,7 @@ const (
 
 func AutoWrapContext(ctx context.Context, traceID string) context.Context {
 	// 全局的traceID
+	// nolint:staticcheck
 	return context.WithValue(ctx, TraceIDKey, traceID)
 }
 

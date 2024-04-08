@@ -52,7 +52,7 @@ func (c *HttpContext) Err() error {
 }
 
 func (c *HttpContext) Value(key any) any {
-	return c.Value(key)
+	return c.ginCtx.Value(key)
 }
 
 func (c *HttpContext) ContentType() string {

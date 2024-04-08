@@ -70,6 +70,7 @@ func (l *Logger) ApplyConfig() {
 		lg = lg.Named(conf.projectName)
 	}
 
+	// nolint:errcheck
 	defer lg.Sync()
 
 	l.l = lg

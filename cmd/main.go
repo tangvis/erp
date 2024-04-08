@@ -17,5 +17,6 @@ func main() {
 	if err = app.registerHTTP(ginEngine); err != nil {
 		panic(err)
 	}
+	// nolint:errcheck
 	ginEngine.Run()
 }

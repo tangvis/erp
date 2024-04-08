@@ -10,7 +10,7 @@ import (
 
 type SheetData struct {
 	Name string
-	Data interface{}
+	Data any
 }
 
 type excelSupportedOption struct {
@@ -28,7 +28,7 @@ func (o excelSupportedOption) FinalHeader() string {
 	return o.Header
 }
 
-func GenerateOptionsByStruct(data interface{}) ([]WriterV2ColOption, error) {
+func GenerateOptionsByStruct(data any) ([]WriterV2ColOption, error) {
 	return generateOptionsByStruct(reflect.TypeOf(data))
 }
 
@@ -133,7 +133,7 @@ func ExportBatchSheet(
 
 func ExportSingleSheet(
 	ctx context.Context,
-	dataSlice interface{},
+	dataSlice any,
 ) (*WriterV2, error) {
 	sheets := []SheetData{
 		{Name: DefaultSheetName, Data: dataSlice},

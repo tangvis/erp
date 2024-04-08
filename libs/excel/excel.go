@@ -59,8 +59,13 @@ type WriterV2 struct {
 func NewWriterV2(defaultSheetName string, cols []WriterV2ColOption) (*WriterV2, error) {
 	file := excelize.NewFile()
 	if defaultSheetName != DefaultSheetName {
-		file.NewSheet(defaultSheetName)
-		file.DeleteSheet(DefaultSheetName)
+		_, err := file.NewSheet(defaultSheetName)
+		if err != nil {
+			return nil, err
+		}
+		if err = file.DeleteSheet(DefaultSheetName); err != nil {
+			return nil, err
+		}
 	}
 	w := &WriterV2{
 		file:   file,
@@ -98,7 +103,9 @@ func (w *WriterV2) AddSheet(name string, cols []WriterV2ColOption) (*SheetWriter
 	if idx, _ := w.file.GetSheetIndex(name); idx != SheetNotExistIndex {
 		return nil, fmt.Errorf("already exist %s", name)
 	}
-	w.file.NewSheet(name)
+	if _, err := w.file.NewSheet(name); err != nil {
+		return nil, err
+	}
 	return w.newSheet(name, cols)
 }
 
@@ -159,7 +166,7 @@ func (w *WriterV2) newSheet(sheet string, colOptions []WriterV2ColOption) (*Shee
 	return res, nil
 }
 
-func (w *WriterV2) WriteCellByXY(ctx context.Context, sheet string, x, y int, val interface{}) error {
+func (w *WriterV2) WriteCellByXY(ctx context.Context, sheet string, x, y int, val any) error {
 	col := indexToCol(x)
 	axis := fmt.Sprintf("%s%d", col, y+1)
 	if err := w.file.SetCellValue(sheet, axis, val); err != nil {
@@ -209,7 +216,7 @@ func NewWriterV2ColOption(
 	}
 }
 
-type SheetWriterV2CellFormatter func(key string, row reflect.Value, value reflect.Value) interface{}
+type SheetWriterV2CellFormatter func(key string, row reflect.Value, value reflect.Value) any
 
 type WriterV2ColOption struct {
 	// header
@@ -228,7 +235,7 @@ type WriterV2ColOption struct {
 	cellStyleID   int
 }
 
-func (w *WriterV2ColOption) Value(row, col reflect.Value) interface{} {
+func (w *WriterV2ColOption) Value(row, col reflect.Value) any {
 	if w.cellFormatter != nil {
 		return w.cellFormatter(w.cellKey, row, col)
 	}
@@ -252,7 +259,7 @@ func (w *SheetWriterV2) markGetRow() int {
 	return w.rowIdx
 }
 
-func (w *SheetWriterV2) WriteRow(ctx context.Context, row interface{}) error {
+func (w *SheetWriterV2) WriteRow(ctx context.Context, row any) error {
 	var err error
 	rowIdx := w.markGetRow()
 	t := reflect.TypeOf(row)
@@ -319,11 +326,11 @@ func (w *SheetWriterV2) WriteRowStringBatch(ctx context.Context, rows [][]string
 }
 
 // WriteRowBatch 这种传错参数的直接panic就好了，理论上只要有测试过就不会出现这个错误，而那种不测试的情况我们不管
-func (w *SheetWriterV2) WriteRowBatch(ctx context.Context, rows interface{}) error {
+func (w *SheetWriterV2) WriteRowBatch(ctx context.Context, rows any) error {
 	return writeRowBatch(rows, w)
 }
 
-func writeRowBatch(rows interface{}, w *SheetWriterV2) error {
+func writeRowBatch(rows any, w *SheetWriterV2) error {
 	sliceType := reflect.TypeOf(rows)
 	if kind := sliceType.Kind(); kind != reflect.Slice {
 		panic(fmt.Sprintf("must pass slice, but not %s", kind))

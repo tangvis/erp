@@ -101,19 +101,19 @@ func (l *Logger) Error(msg string, fields ...Field) {
 	l.l.Error(msg, fields...)
 }
 
-func (l *Logger) DebugF(template string, args ...interface{}) {
+func (l *Logger) DebugF(template string, args ...any) {
 	l.sugar.Debugf(template, args...)
 }
 
-func (l *Logger) InfoF(template string, args ...interface{}) {
+func (l *Logger) InfoF(template string, args ...any) {
 	l.sugar.Infof(template, args...)
 }
 
-func (l *Logger) WarnF(template string, args ...interface{}) {
+func (l *Logger) WarnF(template string, args ...any) {
 	l.sugar.Warnf(template, args...)
 }
 
-func (l *Logger) ErrorF(template string, args ...interface{}) {
+func (l *Logger) ErrorF(template string, args ...any) {
 	l.sugar.Errorf(template, args...)
 }
 
@@ -134,25 +134,25 @@ func (l *Logger) Sync() error {
 
 func Debug(msg string, fields ...Field) { logger.Debug(msg, fields...) }
 
-func DebugF(template string, args ...interface{}) { logger.DebugF(template, args...) }
-func Info(msg string, fields ...Field)            { logger.Info(msg, fields...) }
+func DebugF(template string, args ...any) { logger.DebugF(template, args...) }
+func Info(msg string, fields ...Field)    { logger.Info(msg, fields...) }
 func CtxInfo(ctx context.Context, msg string, fields ...Field) {
 	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTranceID(ctx)))
 	logger.Info(msg, fields...)
 }
-func InfoF(template string, args ...interface{}) { logger.InfoF(template, args...) }
-func CtxInfoF(ctx context.Context, template string, args ...interface{}) {
+func InfoF(template string, args ...any) { logger.InfoF(template, args...) }
+func CtxInfoF(ctx context.Context, template string, args ...any) {
 	logger.InfoF(fmt.Sprintf("[%s]%s", ctxUtil.GetTranceID(ctx), template), args...)
 }
-func Warn(msg string, fields ...Field)           { logger.Warn(msg, fields...) }
-func WarnF(template string, args ...interface{}) { logger.WarnF(template, args...) }
-func Error(msg string, fields ...Field)          { logger.Error(msg, fields...) }
+func Warn(msg string, fields ...Field)   { logger.Warn(msg, fields...) }
+func WarnF(template string, args ...any) { logger.WarnF(template, args...) }
+func Error(msg string, fields ...Field)  { logger.Error(msg, fields...) }
 func CtxError(ctx context.Context, msg string, fields ...Field) {
 	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTranceID(ctx)))
 	logger.Error(msg, fields...)
 }
-func ErrorF(template string, args ...interface{}) { logger.ErrorF(template, args...) }
-func CtxErrorF(ctx context.Context, template string, args ...interface{}) {
+func ErrorF(template string, args ...any) { logger.ErrorF(template, args...) }
+func CtxErrorF(ctx context.Context, template string, args ...any) {
 	logger.ErrorF(fmt.Sprintf("[%s]%s", ctxUtil.GetTranceID(ctx), template), args...)
 }
 func Panic(msg string, fields ...Field) { logger.Panic(msg, fields...) }

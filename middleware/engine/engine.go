@@ -22,8 +22,8 @@ type Context interface {
 	// ContentType 获取底层的
 	ContentType() string
 	// ShouldBind 读取参数
-	ShouldBind(dest interface{}) error
-	ShouldBindJSON(dest interface{}) error
+	ShouldBind(dest any) error
+	ShouldBindJSON(dest any) error
 	Data(code int, contentType string, data []byte)
 	Header(key, value string)
 	GetCtx() context.Context
@@ -60,7 +60,7 @@ func (c *HttpContext) ContentType() string {
 	panic("implement me")
 }
 
-func (c *HttpContext) ShouldBind(dest interface{}) error {
+func (c *HttpContext) ShouldBind(dest any) error {
 	if err := c.ginCtx.ShouldBind(dest); err != nil {
 		return c.convertParamError(err)
 	}
@@ -75,7 +75,7 @@ func (c *HttpContext) Header(key, value string) {
 	c.ginCtx.Header(key, value)
 }
 
-func (c *HttpContext) ShouldBindJSON(dest interface{}) error {
+func (c *HttpContext) ShouldBindJSON(dest any) error {
 	if err := c.ginCtx.ShouldBindJSON(dest); err != nil {
 		return c.convertParamError(err)
 	}
@@ -147,7 +147,7 @@ func beforeWriteBody(ctx *gin.Context) {
 	}
 }
 
-func toResponse(ctx *gin.Context, data interface{}, err error) JSONResponse {
+func toResponse(ctx *gin.Context, data any, err error) JSONResponse {
 	resp := JSONResponse{
 		Data:    data,
 		Message: "Success",
@@ -157,7 +157,7 @@ func toResponse(ctx *gin.Context, data interface{}, err error) JSONResponse {
 	}
 	// 如果是空数据不返回nil，而是返回一个空的map给前端
 	if IsNilValue(data) {
-		resp.Data = map[string]interface{}{}
+		resp.Data = map[string]any{}
 	}
 	// no error
 	if err == nil {
@@ -169,7 +169,7 @@ func toResponse(ctx *gin.Context, data interface{}, err error) JSONResponse {
 	return resp
 }
 
-func json(ctx *gin.Context, data interface{}, err error) {
+func json(ctx *gin.Context, data any, err error) {
 	resp := toResponse(ctx, data, err)
 	beforeWriteBody(ctx)
 	ctx.PureJSON(200, resp)
@@ -206,7 +206,7 @@ func NewRouter(method, url string, handlers gin.HandlersChain) Router {
 	}
 }
 
-func IsNilValue(object interface{}) bool {
+func IsNilValue(object any) bool {
 	if object == nil {
 		return true
 	}

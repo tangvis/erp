@@ -30,7 +30,7 @@ func (conf *ErrorConf) New(message string) *Error {
 	}
 }
 
-func (conf *ErrorConf) NewF(format string, args ...interface{}) *Error {
+func (conf *ErrorConf) NewF(format string, args ...any) *Error {
 	return conf.New(fmt.Sprintf(format, args...))
 }
 

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func EasyRead(reader io.Reader, dest interface{}, options ...SheetReaderOption) error {
+func EasyRead(reader io.Reader, dest any, options ...SheetReaderOption) error {
 	fileReader, err := NewReaderV2(reader)
 	if err != nil {
 		return err
@@ -19,7 +19,7 @@ func EasyRead(reader io.Reader, dest interface{}, options ...SheetReaderOption) 
 	return EasyReadWithReader(fileReader, dest, options...)
 }
 
-func EasyReadWithReader(fileReader *ReaderV2, dest interface{}, options ...SheetReaderOption) error {
+func EasyReadWithReader(fileReader *ReaderV2, dest any, options ...SheetReaderOption) error {
 	sheetReader, err := fileReader.DefaultSheetReader(options...)
 	if err != nil {
 		return err
@@ -188,7 +188,7 @@ func (r *SheetReader) explainTag(field reflect.StructField, tag string) (*sheetR
 	return &res, nil
 }
 
-func (r *SheetReader) readDestType(dest interface{}) (reflect.Type, reflect.Type, error) {
+func (r *SheetReader) readDestType(dest any) (reflect.Type, reflect.Type, error) {
 	ptrType := reflect.TypeOf(dest)
 	if kind := ptrType.Kind(); kind != reflect.Ptr {
 		return nil, nil, fmt.Errorf("target type must be pointer as we need to change origin data, but got %s", kind)
@@ -284,7 +284,7 @@ func (r *SheetReader) File() *excelize.File {
 }
 
 // ReadSome 非文件问题情况下，即使有部分列读取失败，我们也会修改dest
-func (r *SheetReader) ReadSome(dest interface{}, lens int) error {
+func (r *SheetReader) ReadSome(dest any, lens int) error {
 	sliceType, elementType, err := r.readDestType(dest)
 	if err != nil {
 		return err
@@ -321,6 +321,6 @@ func (r *SheetReader) ReadSome(dest interface{}, lens int) error {
 	return nil
 }
 
-func (r *SheetReader) ReadAll(dest interface{}) error {
+func (r *SheetReader) ReadAll(dest any) error {
 	return r.ReadSome(dest, -1)
 }

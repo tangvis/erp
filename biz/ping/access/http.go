@@ -29,11 +29,11 @@ func (c *Controller) URLPatterns() []engine.Router {
 	}
 }
 
-func (c *Controller) Ping(ctx engine.Context) (interface{}, error) {
+func (c *Controller) Ping(ctx engine.Context) (any, error) {
 	return c.biz.Ping(), nil
 }
 
-func (c *Controller) Error(ctx engine.Context) (interface{}, error) {
+func (c *Controller) Error(ctx engine.Context) (any, error) {
 	var req FailPingRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err

@@ -20,16 +20,16 @@ type ReaderRawRow struct {
 	Columns []string
 }
 
-type ReadCellValueFunc func(string) (interface{}, error)
+type ReadCellValueFunc func(string) (any, error)
 
 func NewReadValueInt() ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		return strconv.Atoi(s)
 	}
 }
 
 func NewReadValueTime(loc *time.Location, layout string) ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		return time.ParseInLocation(layout, s, loc)
 	}
 }
@@ -38,7 +38,7 @@ func NewReadValueTime2(loc *time.Location, layouts []string) ReadCellValueFunc {
 	const LastSucessNo = -1
 	lastSuccess := LastSucessNo
 	errFMT := fmt.Sprintf("value '%%s' do not match any of the given layouts, must be one of: [%s]", strings.Join(layouts, ", "))
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		if lastSuccess != LastSucessNo {
 			t, err := time.ParseInLocation(layouts[lastSuccess], s, loc)
 			if err == nil {
@@ -62,7 +62,7 @@ func NewReadValueTime2(loc *time.Location, layouts []string) ReadCellValueFunc {
 }
 
 func NewReadValueTime3(loc *time.Location, layouts []string) ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		for _, layout := range layouts {
 			t, err := time.ParseInLocation(layout, s, loc)
 			if err != nil {
@@ -75,19 +75,19 @@ func NewReadValueTime3(loc *time.Location, layouts []string) ReadCellValueFunc {
 }
 
 func NewReadValueLowerString() ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		return strings.ToLower(s), nil
 	}
 }
 
 func NewReadValueUpperString() ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		return strings.ToUpper(s), nil
 	}
 }
 
 func NewReadValueDecimal() ReadCellValueFunc {
-	return func(s string) (interface{}, error) {
+	return func(s string) (any, error) {
 		return decimal.NewFromString(s)
 	}
 }

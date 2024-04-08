@@ -12,8 +12,8 @@ import (
 // PartTwo slice
 type SingleExcelSheetData struct {
 	Name    string
-	PartOne interface{}
-	PartTwo interface{}
+	PartOne any
+	PartTwo any
 }
 
 // SingleExportExcel

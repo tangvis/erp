@@ -9,7 +9,7 @@ import (
 
 type Controller struct {
 	engine engine.HTTPEngine
-	app    service.APP
+	biz    service.APP
 }
 
 func NewController(
@@ -18,21 +18,25 @@ func NewController(
 ) *Controller {
 	return &Controller{
 		engine: engine,
-		app:    app,
+		biz:    app,
 	}
 }
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
 		engine.NewRouter(http.MethodGet, "/ping", c.engine.JSON(c.Ping)),
-		engine.NewRouter(http.MethodGet, "/ping_failed", c.engine.JSON(c.Error)),
+		engine.NewRouter(http.MethodPost, "/ping_failed", c.engine.JSON(c.Error)),
 	}
 }
 
 func (c *Controller) Ping(ctx engine.Context) (interface{}, error) {
-	return c.app.Ping(), nil
+	return c.biz.Ping(), nil
 }
 
 func (c *Controller) Error(ctx engine.Context) (interface{}, error) {
-	return c.app.PingFail(ctx.GetCtx())
+	var req FailPingRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return c.biz.PingFail(ctx.GetCtx())
 }

@@ -1,12 +1,17 @@
 package engine
 
 import (
+	"bytes"
 	"context"
+	jsonLib "encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"reflect"
 	"time"
 
+	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/conf/config"
 	ctxUtil "github.com/tangvis/erp/libs/context"
 	"github.com/tangvis/erp/libs/ecode"
@@ -29,19 +34,86 @@ type HTTPEngine interface {
 }
 
 type HttpContext struct {
-	*gin.Context
+	ginCtx *gin.Context
 
 	Ctx context.Context
+}
+
+func (c *HttpContext) Deadline() (deadline time.Time, ok bool) {
+	return c.ginCtx.Deadline()
+}
+
+func (c *HttpContext) Done() <-chan struct{} {
+	return c.ginCtx.Done()
+}
+
+func (c *HttpContext) Err() error {
+	return c.ginCtx.Err()
+}
+
+func (c *HttpContext) Value(key any) any {
+	return c.Value(key)
+}
+
+func (c *HttpContext) ContentType() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *HttpContext) ShouldBind(dest interface{}) error {
+	if err := c.ginCtx.ShouldBind(dest); err != nil {
+		return c.convertParamError(err)
+	}
+	return nil
+}
+
+func (c *HttpContext) Data(code int, contentType string, data []byte) {
+	c.ginCtx.Data(code, contentType, data)
+}
+
+func (c *HttpContext) Header(key, value string) {
+	c.ginCtx.Header(key, value)
+}
+
+func (c *HttpContext) ShouldBindJSON(dest interface{}) error {
+	if err := c.ginCtx.ShouldBindJSON(dest); err != nil {
+		return c.convertParamError(err)
+	}
+	return nil
+}
+
+func (c *HttpContext) convertParamError(err error) error {
+	var (
+		typeError        *jsonLib.UnmarshalTypeError
+		syntaxError      *jsonLib.SyntaxError
+		validationErrors validator.ValidationErrors
+	)
+
+	switch {
+	case errors.As(err, &typeError):
+		return common.ErrConfInvalidArguments.NewF("mismatch proto: %s", typeError.Error())
+	case errors.As(err, &syntaxError):
+		return common.ErrConfInvalidArguments.NewF("invalid json: %s", err)
+	case errors.As(err, &validationErrors):
+		buf := bytes.NewBuffer(nil)
+		buf.WriteString("request params failed with validate: ")
+		for _, v := range validationErrors {
+			buf.WriteString(fmt.Sprintf("field %s failed with %s,", v.Field(), v.Tag()))
+		}
+		return common.ErrConfInvalidArguments.New(buf.String())
+	default:
+		return common.ErrConfInvalidArguments.New(err.Error())
+	}
 }
 
 func (c *HttpContext) GetCtx() context.Context {
 	return c.Ctx
 }
 
-func NewHttpContext(ginCtx *gin.Context) *HttpContext {
+func NewHttpContext(ginCtx *gin.Context) Context {
 	return &HttpContext{
-		Context: ginCtx,
-		Ctx:     ctxUtil.AutoWrapContext(context.Background(), GetTraceID(ginCtx)),
+		ginCtx: ginCtx,
+		Ctx:    ctxUtil.AutoWrapContext(context.Background(), GetTraceID(ginCtx)),
 	}
 }
 

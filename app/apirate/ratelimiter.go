@@ -12,6 +12,10 @@ const (
 	publicKey = "pub_key" // 如果没有配置限流，应用一个全局的
 )
 
+var (
+	GlobalLimiters Limiters
+)
+
 type Limiters struct {
 	Pool map[string]*Limiter // key为userID:apiPath
 
@@ -51,7 +55,7 @@ func NewLimiters(settings []repository.RateSetting) *Limiters {
 			setting.TotalLimit,
 		)
 	}
-	for _, router := range public.AllRouters {
+	for _, router := range AllRouters {
 		_ = router
 	}
 

@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/tangvis/erp/app/apirate"
 	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/conf/config"
 	ctxUtil "github.com/tangvis/erp/libs/context"
@@ -192,20 +193,25 @@ func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
 }
 
 type Controller interface {
-	URLPatterns() []common.Router
+	URLPatterns() []Router
 }
 
-func NewRouter(method, url string, handlers gin.HandlersChain) common.Router {
+func NewRouter(method, path string, handlers gin.HandlersChain) Router {
 	if len(handlers) == 0 {
 		panic("handlers is empty")
 	}
-	r := common.Router{
+	apirate.AllRouters = append(apirate.AllRouters, apirate.Router{Path: path})
+	return Router{
 		Method:   method,
-		URL:      url,
+		Path:     path,
 		Handlers: handlers,
 	}
-	common.AllRouters = append(common.AllRouters, r)
-	return r
+}
+
+type Router struct {
+	Method   string
+	Path     string
+	Handlers gin.HandlersChain
 }
 
 func IsNilValue(object any) bool {

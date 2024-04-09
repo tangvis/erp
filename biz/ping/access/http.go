@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/tangvis/erp/biz/ping/service"
-	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -23,8 +22,8 @@ func NewController(
 	}
 }
 
-func (c *Controller) URLPatterns() []common.Router {
-	return []common.Router{
+func (c *Controller) URLPatterns() []engine.Router {
+	return []engine.Router{
 		engine.NewRouter(http.MethodGet, "/ping", c.engine.JSON(c.Ping)),
 		engine.NewRouter(http.MethodPost, "/ping_failed", c.engine.JSON(c.Error)),
 	}

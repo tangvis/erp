@@ -14,6 +14,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	ginEngine.Use()
 	if err = app.registerHTTP(ginEngine); err != nil {
 		panic(err)
 	}

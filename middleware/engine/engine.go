@@ -11,7 +11,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/tangvis/erp/app/apirate"
 	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/conf/config"
 	ctxUtil "github.com/tangvis/erp/libs/context"
@@ -200,7 +199,6 @@ func NewRouter(method, path string, handlers gin.HandlersChain) Router {
 	if len(handlers) == 0 {
 		panic("handlers is empty")
 	}
-	apirate.AllRouters = append(apirate.AllRouters, apirate.Router{Path: path})
 	return Router{
 		Method:   method,
 		Path:     path,

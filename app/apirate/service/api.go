@@ -1,6 +1,8 @@
 package service
 
+import "github.com/gin-gonic/gin"
+
 type APP interface {
-	Allow(userID, path string) bool
 	InitPublic(publicLimitSetting map[string]int)
+	RateLimitWrapper(c *gin.Context)
 }

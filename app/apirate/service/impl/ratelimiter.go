@@ -3,8 +3,10 @@ package impl
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 	"math"
+	"net/http"
 	"sync"
 
 	"github.com/tangvis/erp/app/apirate/repository"
@@ -29,6 +31,13 @@ func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
 	for path, limit := range publicLimitSetting {
 		l.pool[limiterID(publicKey, path)] = NewRateLimiter(publicKey, path, limit, math.MaxInt)
 	}
+}
+
+func (l *Limiters) RateLimitWrapper(c *gin.Context) {
+	if !l.Allow("", c.Request.URL.Path) {
+		_ = c.AbortWithError(http.StatusTooManyRequests, fmt.Errorf("too many requests"))
+	}
+	c.Next()
 }
 
 func (l *Limiters) GetPublicLimiter(path string) *Limiter {

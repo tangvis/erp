@@ -29,7 +29,7 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	}
 }
 
-func (app *application) Use(g *gin.Engine) {
+func (app *application) ActivateRateLimiter(g *gin.Engine) {
 	app.rateLimiterAPP.InitPublic(map[string]int{})
 	g.Use(app.rateLimiterAPP.RateLimitWrapper)
 }
@@ -65,6 +65,6 @@ func (app *application) registerHTTP(ginEngine *gin.Engine) error {
 			}
 		}
 	}
-	app.Use(ginEngine)
+	app.ActivateRateLimiter(ginEngine)
 	return nil
 }

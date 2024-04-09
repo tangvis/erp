@@ -1,34 +1,43 @@
-package apirate
+package impl
 
 import (
+	"context"
 	"fmt"
 	"golang.org/x/time/rate"
+	"math"
 	"sync"
 
 	"github.com/tangvis/erp/app/apirate/repository"
+	"github.com/tangvis/erp/app/apirate/service"
 )
 
 const (
 	publicKey = "pub_key" // 如果没有配置限流，应用一个全局的
 )
 
-var (
-	GlobalLimiters Limiters
-)
-
 type Limiters struct {
-	Pool map[string]*Limiter // key为userID:apiPath
+	repo repository.Repo
+
+	pool map[string]*Limiter // key为userID:apiPath
 
 	lock sync.Mutex
 }
 
+func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	for path, limit := range publicLimitSetting {
+		l.pool[limiterID(publicKey, path)] = NewRateLimiter(publicKey, path, limit, math.MaxInt)
+	}
+}
+
 func (l *Limiters) GetPublicLimiter(path string) *Limiter {
-	return l.Pool[limiterID(publicKey, path)]
+	return l.pool[limiterID(publicKey, path)]
 }
 
 func (l *Limiters) Allow(userID, path string) bool {
 	// todo 读要不要加锁
-	if limiter, ok := l.Pool[limiterID(userID, path)]; ok {
+	if limiter, ok := l.pool[limiterID(userID, path)]; ok {
 		return limiter.Allow()
 	}
 	pubLimiter := l.GetPublicLimiter(path)
@@ -42,7 +51,13 @@ func limiterID(userID, path string) string {
 	return fmt.Sprintf("%s:%s", userID, path)
 }
 
-func NewLimiters(settings []repository.RateSetting) *Limiters {
+func NewLimiters(
+	repo repository.Repo,
+) service.APP {
+	settings, err := repo.GetRateLimitSettings(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	pool := make(map[string]*Limiter)
 	for _, setting := range settings {
 		if !setting.Valid() {
@@ -55,12 +70,9 @@ func NewLimiters(settings []repository.RateSetting) *Limiters {
 			setting.TotalLimit,
 		)
 	}
-	for _, router := range AllRouters {
-		_ = router
-	}
 
 	return &Limiters{
-		Pool: pool,
+		pool: pool,
 		lock: sync.Mutex{},
 	}
 }

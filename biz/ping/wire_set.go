@@ -8,10 +8,10 @@ import (
 )
 
 var APISet = wire.NewSet(
-	ServiceSet,
+	BizSet,
 	access.NewController,
 )
 
-var ServiceSet = wire.NewSet(
+var BizSet = wire.NewSet(
 	impl.NewPing,
 )

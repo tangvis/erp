@@ -6,6 +6,7 @@ import (
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
 	"github.com/tangvis/erp/biz/ping/service"
+	"github.com/tangvis/erp/common"
 	logutil "github.com/tangvis/erp/libs/log"
 )
 
@@ -30,5 +31,5 @@ func (p *Ping) Ping() string {
 
 func (p *Ping) PingFail(ctx context.Context) (string, error) {
 	logutil.CtxErrorF(ctx, "manual fail ping")
-	return "", public.ErrPingFailedTest
+	return "", common.ErrPingFailedTest
 }

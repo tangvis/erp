@@ -29,8 +29,7 @@ type RepoImpl struct {
 }
 
 func (r RepoImpl) GetRateLimitSettings(ctx context.Context) ([]RateSettingTab, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, nil
 }
 
 func NewRepoImpl() Repo {

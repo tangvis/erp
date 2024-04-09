@@ -29,11 +29,6 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	}
 }
 
-func (app *application) ActivateRateLimiter(g *gin.Engine) {
-	app.rateLimiterAPP.InitPublic(map[string]int{})
-	g.Use(app.rateLimiterAPP.RateLimitWrapper)
-}
-
 func initializeApplication(
 	dep *dependence,
 ) (*application, error) {
@@ -52,6 +47,7 @@ func initializeApplication(
 }
 
 func (app *application) registerHTTP(ginEngine *gin.Engine) error {
+	ginEngine.Use(app.rateLimiterAPP.RateLimitWrapper)
 	controllers := app.GetRouterGroups()
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {
@@ -65,6 +61,14 @@ func (app *application) registerHTTP(ginEngine *gin.Engine) error {
 			}
 		}
 	}
-	app.ActivateRateLimiter(ginEngine)
+	app.InitCommonRateLimiter(ginEngine)
 	return nil
+}
+
+func (app *application) InitCommonRateLimiter(g *gin.Engine) {
+	m := make(map[string]int)
+	for _, route := range g.Routes() {
+		m[route.Path] = 1
+	}
+	app.rateLimiterAPP.InitPublic(m)
 }

@@ -9,7 +9,3 @@ type Router struct {
 }
 
 var AllRouters []Router
-
-func RegisterAllRouters(all []Router) {
-	AllRouters = all
-}

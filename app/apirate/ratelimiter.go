@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/tangvis/erp/app/apirate/repository"
-	"github.com/tangvis/erp/common"
 )
 
 const (
@@ -52,8 +51,8 @@ func NewLimiters(settings []repository.RateSetting) *Limiters {
 			setting.TotalLimit,
 		)
 	}
-	for _, router := range common.AllRouters {
-
+	for _, router := range public.AllRouters {
+		_ = router
 	}
 
 	return &Limiters{

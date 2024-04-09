@@ -199,11 +199,13 @@ func NewRouter(method, url string, handlers gin.HandlersChain) common.Router {
 	if len(handlers) == 0 {
 		panic("handlers is empty")
 	}
-	return common.Router{
+	r := common.Router{
 		Method:   method,
 		URL:      url,
 		Handlers: handlers,
 	}
+	common.AllRouters = append(common.AllRouters, r)
+	return r
 }
 
 func IsNilValue(object any) bool {

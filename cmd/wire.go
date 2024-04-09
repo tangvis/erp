@@ -12,7 +12,6 @@ import (
 
 	"github.com/tangvis/erp/biz/ping"
 	"github.com/tangvis/erp/biz/ping/access"
-	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -44,10 +43,8 @@ func initializeApplication(
 
 func (app *application) registerHTTP(ginEngine *gin.Engine) error {
 	controllers := app.GetRouterGroups()
-	allRouters := make([]common.Router, 0)
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {
-			allRouters = append(allRouters, router)
 			switch router.Method {
 			case http.MethodGet:
 				ginEngine.GET(router.URL, router.Handlers...)
@@ -58,6 +55,5 @@ func (app *application) registerHTTP(ginEngine *gin.Engine) error {
 			}
 		}
 	}
-	common.RegisterAllRouters(allRouters)
 	return nil
 }

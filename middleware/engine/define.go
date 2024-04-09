@@ -15,9 +15,3 @@ type JSONResponse struct {
 	Data     any    `json:"data"`
 	TranceID string `json:"trance_id"`
 }
-
-type Router struct {
-	Method   string
-	URL      string
-	Handlers gin.HandlersChain
-}

@@ -192,14 +192,14 @@ func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
 }
 
 type Controller interface {
-	URLPatterns() []Router
+	URLPatterns() []common.Router
 }
 
-func NewRouter(method, url string, handlers gin.HandlersChain) Router {
+func NewRouter(method, url string, handlers gin.HandlersChain) common.Router {
 	if len(handlers) == 0 {
 		panic("handlers is empty")
 	}
-	return Router{
+	return common.Router{
 		Method:   method,
 		URL:      url,
 		Handlers: handlers,

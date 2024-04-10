@@ -1,0 +1,12 @@
+package service
+
+import (
+	"context"
+
+	"github.com/tangvis/erp/app/user/repository"
+)
+
+type APP interface {
+	GetUserByName(ctx context.Context, username string) (repository.UserTab, error)
+	GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (repository.UserTab, error)
+}

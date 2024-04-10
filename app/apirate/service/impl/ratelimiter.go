@@ -38,7 +38,8 @@ func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
 func (l *Limiters) RateLimitWrapper(c *gin.Context) {
 	success, allow := l.Allow("", c.Request.URL.Path)
 	if !allow {
-		_ = c.AbortWithError(http.StatusTooManyRequests, fmt.Errorf("too many requests"))
+		c.String(http.StatusTooManyRequests, "too many requests")
+		c.Abort()
 	}
 	c.Next()
 	// 只有成功返回才会扣减

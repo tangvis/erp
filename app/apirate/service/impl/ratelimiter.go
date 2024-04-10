@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"sync"
+	"sync/atomic"
 
 	"github.com/tangvis/erp/app/apirate/repository"
 	"github.com/tangvis/erp/app/apirate/service"
@@ -26,6 +27,7 @@ type Limiters struct {
 }
 
 func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
+	// todo public for user rather than api path
 	l.lock.Lock()
 	defer l.lock.Unlock()
 	for path, limit := range publicLimitSetting {
@@ -34,26 +36,35 @@ func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
 }
 
 func (l *Limiters) RateLimitWrapper(c *gin.Context) {
-	if !l.Allow("", c.Request.URL.Path) {
+	success, allow := l.Allow("", c.Request.URL.Path)
+	if !allow {
 		_ = c.AbortWithError(http.StatusTooManyRequests, fmt.Errorf("too many requests"))
 	}
 	c.Next()
+	// 只有成功返回才会扣减
+	if c.Err() == nil {
+		success()
+	}
 }
 
 func (l *Limiters) GetPublicLimiter(path string) *Limiter {
 	return l.pool[limiterID(publicKey, path)]
 }
 
-func (l *Limiters) Allow(userID, path string) bool {
+func (l *Limiters) Allow(userID, path string) (func(), bool) {
+	var limiter *Limiter
+	successAction := func() {
+		limiter.Incr()
+	}
 	// todo 读要不要加锁
 	if limiter, ok := l.pool[limiterID(userID, path)]; ok {
-		return limiter.Allow()
+		return successAction, limiter.Allow()
 	}
 	pubLimiter := l.GetPublicLimiter(path)
 	if pubLimiter == nil {
-		return false
+		return successAction, false
 	}
-	return pubLimiter.Allow()
+	return successAction, pubLimiter.Allow()
 }
 
 func limiterID(userID, path string) string {
@@ -93,7 +104,7 @@ type Limiter struct {
 	QPS          int // Queries per second
 	TotalAllowed int
 	limiter      *rate.Limiter
-	TotalUsed    int
+	TotalUsed    atomic.Uint64
 
 	mu sync.Mutex
 }
@@ -112,17 +123,13 @@ func NewRateLimiter(userID, apiPath string, qps, totalAllowed int) *Limiter {
 
 // Allow checks if a request is allowed under the rate limiting rules.
 func (r *Limiter) Allow() bool {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if r.TotalUsed >= r.TotalAllowed {
+	if r.TotalUsed.Load() >= uint64(r.TotalAllowed) {
 		return false
 	}
 
-	if r.limiter.Allow() {
-		r.TotalUsed++
-		return true
-	}
+	return r.limiter.Allow()
+}
 
-	return false
+func (r *Limiter) Incr() {
+	r.TotalUsed.Add(1)
 }

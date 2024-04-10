@@ -1,6 +1,12 @@
 package repository
 
-import "github.com/tangvis/erp/app/user/define"
+import (
+	"github.com/tangvis/erp/app/user/define"
+)
+
+func (q *UserTab) TableName() string {
+	return "user_tab"
+}
 
 type UserTab struct {
 	ID          uint64

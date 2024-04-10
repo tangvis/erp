@@ -1,7 +1,5 @@
 package define
 
-const (
-	UserTabName = "user_tab"
-)
+const ()
 
 type UserStatus int8

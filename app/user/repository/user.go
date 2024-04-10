@@ -2,17 +2,35 @@ package repository
 
 import (
 	"context"
-
+	"errors"
 	"github.com/tangvis/erp/agent/mysql"
+	"github.com/tangvis/erp/app/user/define"
+	"gorm.io/gorm"
 )
 
 type User interface {
-	GetUserByName(ctx context.Context, username ...string) ([]UserTab, error)
-	GetUserByPhoneNumber(ctx context.Context, phoneNumber ...string) ([]UserTab, error)
+	QueryUserByName(ctx context.Context, query define.UserQuery) ([]UserTab, error)
+	GetUserByID(ctx context.Context, id uint64) (UserTab, error)
 }
 
 type UserRepo struct {
 	db *mysql.DB
+}
+
+func (u *UserRepo) GetUserByID(ctx context.Context, id uint64) (UserTab, error) {
+	var user UserTab
+	// Using Gorm's First method to retrieve the first record that matches the query.
+	// The method automatically adds a "LIMIT 1" to the query.
+	if err := u.db.WithContext(ctx).Model(&UserTab{}).Where("id = ?", id).First(&user).Error; err != nil {
+		// Handling the case where the user is not found or there's another error.
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// todo handle no found error
+			return UserTab{}, err
+		}
+		// Return the error if it's of a different type.
+		return UserTab{}, err
+	}
+	return user, nil
 }
 
 func NewUserRepo(
@@ -23,19 +41,23 @@ func NewUserRepo(
 	}
 }
 
-func (u *UserRepo) GetUserByName(ctx context.Context, usernames ...string) ([]UserTab, error) {
-	users := make([]UserTab, 0)
-	// Use Gorm's `Where` with `IN` clause for matching usernames
-	if err := u.db.WithContext(ctx).Where("username IN ?", usernames).Find(&users).Error; err != nil {
+func (u *UserRepo) QueryUserByName(ctx context.Context, query define.UserQuery) ([]UserTab, error) {
+	if err := query.Valid(); err != nil {
 		return nil, err
 	}
-	return users, nil
-}
-
-func (u *UserRepo) GetUserByPhoneNumber(ctx context.Context, phoneNumbers ...string) ([]UserTab, error) {
+	q := u.db.WithContext(ctx).Model(&UserTab{})
 	users := make([]UserTab, 0)
-	// Use Gorm's `Where` with `IN` clause for matching phone numbers
-	if err := u.db.WithContext(ctx).Where("phone_number IN ?", phoneNumbers).Find(&users).Error; err != nil {
+	// Use Gorm's `Where` with `IN` clause for matching usernames
+	if len(query.Usernames) > 0 {
+		q = q.Where("username IN ?", query.Usernames)
+	}
+	if len(query.PhoneNumbers) > 0 {
+		q = q.Where("phone_number IN ?", query.PhoneNumbers)
+	}
+	if len(query.Emails) > 0 {
+		q = q.Where("email IN ?", query.Emails)
+	}
+	if err := q.Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil

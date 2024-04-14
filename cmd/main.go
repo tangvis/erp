@@ -19,5 +19,5 @@ func main() {
 		panic(err)
 	}
 	// nolint:errcheck
-	ginEngine.Run()
+	ginEngine.Run("127.0.0.1:8080")
 }

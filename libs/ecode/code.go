@@ -10,8 +10,8 @@ const (
 )
 
 const (
-	Ping      Business = 10
-	UserLogin Business = 11
+	Ping Business = 10
+	User Business = 11
 )
 
 const (

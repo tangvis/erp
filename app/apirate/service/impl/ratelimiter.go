@@ -55,17 +55,19 @@ func (l *Limiters) GetPublicLimiter(path string) *Limiter {
 func (l *Limiters) Allow(userID, path string) (func(), bool) {
 	var limiter *Limiter
 	successAction := func() {
-		limiter.Incr()
+		if limiter != nil {
+			limiter.Incr()
+		}
 	}
 	// todo 读要不要加锁
 	if limiter, ok := l.pool[limiterID(userID, path)]; ok {
 		return successAction, limiter.Allow()
 	}
-	pubLimiter := l.GetPublicLimiter(path)
-	if pubLimiter == nil {
+	limiter = l.GetPublicLimiter(path)
+	if limiter == nil {
 		return successAction, false
 	}
-	return successAction, pubLimiter.Allow()
+	return successAction, limiter.Allow()
 }
 
 func limiterID(userID, path string) string {

@@ -12,13 +12,17 @@ import (
 
 	"github.com/tangvis/erp/app/apirate"
 	"github.com/tangvis/erp/app/apirate/service"
+	userAPP "github.com/tangvis/erp/app/user"
 	"github.com/tangvis/erp/biz/ping"
-	"github.com/tangvis/erp/biz/ping/access"
+	pingHTTP "github.com/tangvis/erp/biz/ping/access"
+	"github.com/tangvis/erp/biz/user"
+	userHTTP "github.com/tangvis/erp/biz/user/access"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
 type application struct {
-	pingController *access.Controller
+	pingController *pingHTTP.Controller
+	userController *userHTTP.Controller
 
 	rateLimiterAPP service.APP
 }
@@ -26,6 +30,7 @@ type application struct {
 func (app *application) GetRouterGroups() []engine.Controller {
 	return []engine.Controller{
 		app.pingController,
+		app.userController,
 	}
 }
 
@@ -36,6 +41,8 @@ func initializeApplication(
 		ping.APISet,
 		engine.Set,
 		apirate.ServiceSet,
+		user.APISet,
+		userAPP.ServiceSet,
 		wire.FieldsOf(
 			new(*dependence),
 			"DB",

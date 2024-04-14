@@ -22,6 +22,7 @@ func newMySQL(dsn string, maxIdle, maxOpen int, maxLifetime, maxIdleTime time.Du
 	if err != nil {
 		return nil, err
 	}
+	RegisterGlobalHooks(db)
 	rawDB, err := db.DB()
 	if err != nil {
 		return nil, err

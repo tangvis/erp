@@ -64,7 +64,7 @@ func (u User) CreateUser(ctx context.Context, user define.UserEntity) (define.Us
 		Passwd:      user.Passwd,
 		PhoneNumber: user.PhoneNumber,
 		Email:       user.Email,
-		Status:      user.Status,
+		UserStatus:  user.Status,
 	})
 	if err != nil {
 		return define.UserEntity{}, err
@@ -80,7 +80,7 @@ func (u User) CreateUser(ctx context.Context, user define.UserEntity) (define.Us
 func (u User) checkInfoAvailable(ctx context.Context, user define.UserEntity) error {
 	// Check if the username already exists
 	existingUser, err := u.GetUserByName(ctx, user.Username)
-	if err != nil && errors.Is(err, common.ErrDBRecordNotFound) {
+	if err != nil && !errors.Is(err, common.ErrDBRecordNotFound) {
 		return err
 	}
 	if existingUser.ID > 0 {
@@ -89,7 +89,7 @@ func (u User) checkInfoAvailable(ctx context.Context, user define.UserEntity) er
 
 	// Check if the email already exists
 	existingUser, err = u.GetUserByEmail(ctx, user.Email)
-	if err != nil && errors.Is(err, common.ErrDBRecordNotFound) {
+	if err != nil && !errors.Is(err, common.ErrDBRecordNotFound) {
 		return err
 	}
 	if existingUser.ID > 0 {

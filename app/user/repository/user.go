@@ -6,7 +6,6 @@ import (
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/app/user/define"
 	"gorm.io/gorm"
-	"time"
 )
 
 type User interface {
@@ -66,9 +65,6 @@ func (u *UserRepo) QueryUserByName(ctx context.Context, query define.UserQuery) 
 }
 
 func (u *UserRepo) CreateUser(ctx context.Context, user UserTab) (UserTab, error) {
-	now := time.Now()
-	user.Ctime = now.UnixMilli()
-	user.Mtime = now.UnixMilli()
 	if err := u.db.WithContext(ctx).Create(&user).Error; err != nil {
 		return UserTab{}, err
 	}

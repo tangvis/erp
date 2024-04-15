@@ -34,9 +34,14 @@ func (c *Controller) Create(ctx engine.Context) (any, error) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err
 	}
-	return c.app.CreateUser(ctx, define.UserEntity{
+	createdUser, err := c.app.CreateUser(ctx, define.UserEntity{
 		Username: req.Username,
 		Passwd:   req.Password,
 		Email:    req.Email,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return createdUser, nil
 }

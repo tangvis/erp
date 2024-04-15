@@ -1,25 +1,25 @@
-package access
+package user
 
 import (
-	"github.com/tangvis/erp/biz/user/service"
-	"github.com/tangvis/erp/biz/user/service/define"
 	"net/http"
 
+	"github.com/tangvis/erp/app/user/define"
+	userAPP "github.com/tangvis/erp/app/user/service"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
 type Controller struct {
 	engine engine.HTTPEngine
-	biz    service.APP
+	app    userAPP.APP
 }
 
 func NewController(
 	engine engine.HTTPEngine,
-	app service.APP,
+	app userAPP.APP,
 ) *Controller {
 	return &Controller{
 		engine: engine,
-		biz:    app,
+		app:    app,
 	}
 }
 
@@ -34,5 +34,9 @@ func (c *Controller) Create(ctx engine.Context) (any, error) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err
 	}
-	return c.biz.Create(ctx, req)
+	return c.app.CreateUser(ctx, define.UserEntity{
+		Username: req.Username,
+		Passwd:   req.Password,
+		Email:    req.Email,
+	})
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
-	"github.com/tangvis/erp/biz/ping/service"
+	"github.com/tangvis/erp/app/ping/service"
 	"github.com/tangvis/erp/common"
 	logutil "github.com/tangvis/erp/libs/log"
 )

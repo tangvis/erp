@@ -1,9 +1,9 @@
-package access
+package ping
 
 import (
 	"net/http"
 
-	"github.com/tangvis/erp/biz/ping/service"
+	"github.com/tangvis/erp/app/ping/service"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -39,4 +39,9 @@ func (c *Controller) Error(ctx engine.Context) (any, error) {
 		return nil, err
 	}
 	return c.biz.PingFail(ctx.GetCtx())
+}
+
+type FailPingRequest struct {
+	ID   uint64 `json:"id" binding:"required"`
+	Name string `json:"name"`
 }

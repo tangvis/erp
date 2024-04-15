@@ -10,13 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 
+	"github.com/tangvis/erp/access"
+	pingHTTP "github.com/tangvis/erp/access/ping"
+	userHTTP "github.com/tangvis/erp/access/user"
 	"github.com/tangvis/erp/app/apirate"
 	"github.com/tangvis/erp/app/apirate/service"
+	"github.com/tangvis/erp/app/ping"
 	userAPP "github.com/tangvis/erp/app/user"
-	"github.com/tangvis/erp/biz/ping"
-	pingHTTP "github.com/tangvis/erp/biz/ping/access"
-	"github.com/tangvis/erp/biz/user"
-	userHTTP "github.com/tangvis/erp/biz/user/access"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -38,11 +38,11 @@ func initializeApplication(
 	dep *dependence,
 ) (*application, error) {
 	wire.Build(
-		ping.APISet,
+		ping.ServiceSet,
 		engine.Set,
 		apirate.ServiceSet,
-		user.APISet,
 		userAPP.ServiceSet,
+		access.HTTPSet,
 		wire.FieldsOf(
 			new(*dependence),
 			"DB",

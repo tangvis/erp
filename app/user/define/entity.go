@@ -3,15 +3,15 @@ package define
 import "fmt"
 
 type UserEntity struct {
-	ID          uint64
-	Username    string
-	Passwd      string
-	PhoneNumber string
-	Email       string
-	Status      UserStatus
+	ID          uint64     `json:"id,omitempty"`
+	Username    string     `json:"username,omitempty"`
+	Passwd      string     `json:"password,omitempty"`
+	PhoneNumber string     `json:"phone_number,omitempty"`
+	Email       string     `json:"email,omitempty"`
+	Status      UserStatus `json:"-"`
 
-	Ctime int64
-	Mtime int64
+	Ctime int64 `json:"-"`
+	Mtime int64 `json:"-"`
 }
 
 type UserQuery struct {
@@ -36,12 +36,12 @@ type SignupRequest struct {
 
 type LoginRequest struct {
 	Username string `json:"username"`
-	Email    string `json:"email" binding:"email"`
+	Email    string `json:"email" binding:"omitempty,email"`
 	Password string `json:"password" binding:"required"`
 }
 
 func (u *LoginRequest) Validate() error {
-	if u.Username == "" || u.Email == "" {
+	if u.Username == "" && u.Email == "" {
 		return fmt.Errorf("username or email is needed")
 	}
 	return nil

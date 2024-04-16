@@ -77,6 +77,32 @@ func (u User) CreateUser(ctx context.Context, user define.UserEntity) (define.Us
 	return user, nil
 }
 
+func (u User) Login(ctx context.Context, req define.LoginRequest) (define.UserEntity, error) {
+	if req.Username != "" {
+		return u.login(ctx, req.Username, req.Password, u.GetUserByName)
+	}
+	return u.login(ctx, req.Email, req.Password, u.GetUserByName)
+}
+
+func (u User) login(ctx context.Context, info, passwd string, f func(ctx context.Context, email string) (repository.UserTab, error)) (define.UserEntity, error) {
+	user, err := f(ctx, info)
+	if err != nil {
+		if errors.Is(err, common.ErrDBRecordNotFound) {
+			return define.UserEntity{}, common.ErrUserInfoWrong
+		}
+		return define.UserEntity{}, err
+	}
+	if user.Passwd != passwd {
+		return define.UserEntity{}, common.ErrUserInfoWrong
+	}
+	return define.UserEntity{
+		ID:          user.ID,
+		Username:    user.Username,
+		PhoneNumber: user.PhoneNumber,
+		Email:       user.Email,
+	}, nil
+}
+
 func (u User) checkInfoAvailable(ctx context.Context, user define.UserEntity) error {
 	// Check if the username already exists
 	existingUser, err := u.GetUserByName(ctx, user.Username)

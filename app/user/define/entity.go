@@ -33,3 +33,16 @@ type SignupRequest struct {
 	Email    string `json:"email" binding:"email,required"`
 	Password string `json:"password" binding:"required"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email" binding:"email"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (u *LoginRequest) Validate() error {
+	if u.Username == "" || u.Email == "" {
+		return fmt.Errorf("username or email is needed")
+	}
+	return nil
+}

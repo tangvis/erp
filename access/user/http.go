@@ -25,11 +25,12 @@ func NewController(
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
-		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Create)),
+		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Signup)),
+		engine.NewRouter(http.MethodPost, "/user/login", c.engine.JSON(c.Login)),
 	}
 }
 
-func (c *Controller) Create(ctx engine.Context) (any, error) {
+func (c *Controller) Signup(ctx engine.Context) (any, error) {
 	var req define.SignupRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err
@@ -39,6 +40,19 @@ func (c *Controller) Create(ctx engine.Context) (any, error) {
 		Passwd:   req.Password,
 		Email:    req.Email,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return createdUser, nil
+}
+
+func (c *Controller) Login(ctx engine.Context) (any, error) {
+	var req define.LoginRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	createdUser, err := c.app.Login(ctx, req)
 	if err != nil {
 		return nil, err
 	}

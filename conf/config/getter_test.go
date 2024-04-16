@@ -25,7 +25,7 @@ MaxLifeTime = "1h"
 		t.Fatalf("Failed to read config: %v", err)
 	}
 
-	// Create a new configGetter instance
+	// Signup a new configGetter instance
 	cfgGetter := NewConfigGetter(viper.GetViper())
 
 	// Call the GetMySQLConfig method

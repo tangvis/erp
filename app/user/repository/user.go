@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/app/user/define"
+	"github.com/tangvis/erp/common"
 	"gorm.io/gorm"
 )
 
@@ -25,8 +26,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, id uint64) (UserTab, error) 
 	if err := u.db.WithContext(ctx).Model(&UserTab{}).Where("id = ?", id).First(&user).Error; err != nil {
 		// Handling the case where the user is not found or there's another error.
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// todo handle no found error
-			return UserTab{}, err
+			return UserTab{}, common.ErrDBRecordNotFound
 		}
 		// Return the error if it's of a different type.
 		return UserTab{}, err

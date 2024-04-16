@@ -79,6 +79,11 @@ func (c *HttpContext) ShouldBindJSON(dest any) error {
 	if err := c.ginCtx.ShouldBindJSON(dest); err != nil {
 		return c.convertParamError(err)
 	}
+	if customValidator, ok := dest.(Validator); ok {
+		if err := customValidator.Validate(); err != nil {
+			return common.ErrConfInvalidArguments.New(err.Error())
+		}
+	}
 	return nil
 }
 
@@ -224,4 +229,8 @@ func IsNilValue(object any) bool {
 	default:
 		return false
 	}
+}
+
+type Validator interface {
+	Validate() error
 }

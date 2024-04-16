@@ -81,7 +81,7 @@ func (u User) Login(ctx context.Context, req define.LoginRequest) (define.UserEn
 	if req.Username != "" {
 		return u.login(ctx, req.Username, req.Password, u.GetUserByName)
 	}
-	return u.login(ctx, req.Email, req.Password, u.GetUserByName)
+	return u.login(ctx, req.Email, req.Password, u.GetUserByEmail)
 }
 
 func (u User) login(ctx context.Context, info, passwd string, f func(ctx context.Context, email string) (repository.UserTab, error)) (define.UserEntity, error) {

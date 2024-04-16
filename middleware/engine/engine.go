@@ -193,7 +193,7 @@ func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
 			_ = ctx.Error(err)
 		}
 	}
-	return append(gin.HandlersChain{PanicWrapper, LogWrapper}, coreHandler)
+	return gin.HandlersChain{coreHandler}
 }
 
 type Controller interface {

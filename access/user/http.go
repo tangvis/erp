@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/tangvis/erp/libs/crypto"
 
@@ -29,6 +30,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
 		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Signup)),
 		engine.NewRouter(http.MethodPost, "/user/login", c.engine.JSON(c.Login)),
+		engine.NewRouter(http.MethodPost, "/user/logout", c.engine.JSON(c.SignOut)),
 	}
 }
 
@@ -60,10 +62,15 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 		return nil, err
 	}
 	ctx.SetSession(engine.UserInfo{
-		ID:       userInfo.ID,
-		Username: userInfo.Username,
-		Email:    userInfo.Email,
+		ID:        userInfo.ID,
+		Username:  userInfo.Username,
+		Email:     userInfo.Email,
+		LoginTime: time.Now().Unix(),
 	})
 
 	return userInfo, nil
+}
+
+func (c *Controller) SignOut(ctx engine.Context) (any, error) {
+	return nil, ctx.SignOut()
 }

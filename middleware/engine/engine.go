@@ -30,6 +30,7 @@ type Context interface {
 	Header(key, value string)
 	GetCtx() context.Context
 	SetSession(userInfo UserInfo)
+	SignOut() error
 }
 
 type HTTPEngine interface {
@@ -123,6 +124,12 @@ func (c *HttpContext) SetSession(userInfo UserInfo) {
 	session := sessions.Default(c.ginCtx)
 	session.Set(UserInfoKey, userInfo)
 	_ = session.Save()
+}
+
+func (c *HttpContext) SignOut() error {
+	session := sessions.Default(c.ginCtx)
+	session.Clear()
+	return session.Save()
 }
 
 func NewHttpContext(ginCtx *gin.Context) Context {

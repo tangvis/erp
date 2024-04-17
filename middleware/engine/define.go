@@ -8,9 +8,11 @@ const (
 )
 
 type UserInfo struct {
-	ID       uint64
-	Username string
-	Email    string
+	ID        uint64 `json:"id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	LoginTime int64  `json:"login_time"`
+	IP        string `json:"ip"`
 }
 
 type HTTPAPIJSONHandler func(ctx Context) (any, error)

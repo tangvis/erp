@@ -1,8 +1,9 @@
 package user
 
 import (
-	"github.com/tangvis/erp/libs/crypto"
 	"net/http"
+
+	"github.com/tangvis/erp/libs/crypto"
 
 	"github.com/tangvis/erp/app/user/define"
 	userAPP "github.com/tangvis/erp/app/user/service"
@@ -54,10 +55,15 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 		return nil, err
 	}
 	req.Password = crypto.GetMD5Hash(req.Password)
-	createdUser, err := c.app.Login(ctx, req)
+	userInfo, err := c.app.Login(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+	ctx.SetSession(engine.UserInfo{
+		ID:       userInfo.ID,
+		Username: userInfo.Username,
+		Email:    userInfo.Email,
+	})
 
-	return createdUser, nil
+	return userInfo, nil
 }

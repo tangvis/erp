@@ -24,12 +24,12 @@ func NewController(
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
-		engine.NewRouter(http.MethodGet, "/ping", c.engine.JSON(c.Ping)),
+		engine.NewRouter(http.MethodGet, "/ping", c.engine.JSONAuth(c.Ping)),
 		engine.NewRouter(http.MethodPost, "/ping_failed", c.engine.JSON(c.Error)),
 	}
 }
 
-func (c *Controller) Ping(ctx engine.Context) (any, error) {
+func (c *Controller) Ping(ctx engine.Context, userInfo engine.UserInfo) (any, error) {
 	return c.biz.Ping(), nil
 }
 

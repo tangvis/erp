@@ -6,8 +6,10 @@ import (
 	jsonLib "encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"net/http"
 	"reflect"
 	"time"
 
@@ -27,10 +29,12 @@ type Context interface {
 	Data(code int, contentType string, data []byte)
 	Header(key, value string)
 	GetCtx() context.Context
+	SetSession(userInfo UserInfo)
 }
 
 type HTTPEngine interface {
 	JSON(handler HTTPAPIJSONHandler) gin.HandlersChain
+	JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain
 }
 
 type HttpContext struct {
@@ -115,6 +119,12 @@ func (c *HttpContext) GetCtx() context.Context {
 	return c.Ctx
 }
 
+func (c *HttpContext) SetSession(userInfo UserInfo) {
+	session := sessions.Default(c.ginCtx)
+	session.Set(UserInfoKey, userInfo)
+	_ = session.Save()
+}
+
 func NewHttpContext(ginCtx *gin.Context) Context {
 	return &HttpContext{
 		ginCtx: ginCtx,
@@ -194,6 +204,24 @@ func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
 		}
 	}
 	return gin.HandlersChain{coreHandler}
+}
+
+func (engine *Engine) JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain {
+	coreHandler := func(ctx *gin.Context) {
+		rawUserInfo, exists := ctx.Get(UserInfoKey)
+		if !exists {
+			ctx.JSON(http.StatusForbidden, gin.H{
+				"message": "auth error",
+			})
+			ctx.Abort()
+		}
+		resp, err := handler(NewHttpContext(ctx), rawUserInfo.(UserInfo))
+		json(ctx, resp, err)
+		if err != nil {
+			_ = ctx.Error(err)
+		}
+	}
+	return gin.HandlersChain{Auth(), coreHandler}
 }
 
 type Controller interface {

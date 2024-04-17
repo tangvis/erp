@@ -30,7 +30,7 @@ type Context interface {
 	GetCtx() context.Context
 	SetSession(userInfo *UserInfo) error
 	HasLogin() *UserInfo
-	SignOut() error
+	LogOut() error
 }
 
 type HTTPEngine interface {
@@ -137,7 +137,7 @@ func (c *HttpContext) HasLogin() *UserInfo {
 	return &userInfo
 }
 
-func (c *HttpContext) SignOut() error {
+func (c *HttpContext) LogOut() error {
 	session := sessions.Default(c.ginCtx)
 	session.Clear()
 	return session.Save()

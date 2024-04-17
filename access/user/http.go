@@ -30,7 +30,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
 		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Signup)),
 		engine.NewRouter(http.MethodPost, "/user/login", c.engine.JSON(c.Login)),
-		engine.NewRouter(http.MethodPost, "/user/logout", c.engine.JSON(c.SignOut)),
+		engine.NewRouter(http.MethodPost, "/user/logout", c.engine.JSON(c.LogOut)),
 	}
 }
 
@@ -82,6 +82,6 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 	return userInfo, nil
 }
 
-func (c *Controller) SignOut(ctx engine.Context) (any, error) {
-	return nil, ctx.SignOut()
+func (c *Controller) LogOut(ctx engine.Context) (any, error) {
+	return nil, ctx.LogOut()
 }

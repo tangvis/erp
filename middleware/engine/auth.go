@@ -1,6 +1,7 @@
 package engine
 
 import (
+	jsonLib "encoding/json"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -9,13 +10,17 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		userInfo := session.Get(UserInfoKey)
-		if userInfo == nil {
+		rawUserInfo := session.Get(UserInfoKey)
+		if rawUserInfo == nil {
+			// todo 错误返回
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "not authed",
 			})
 			c.Abort()
+			return
 		}
-		c.Set(UserInfoKey, userInfo)
+		var userInfo UserInfo
+		_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
+		c.Set(UserInfoKey, &userInfo)
 	}
 }

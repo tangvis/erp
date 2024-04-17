@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/sessions"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -56,7 +55,7 @@ func initializeApplication(
 
 func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) error {
 	ginEngine.Use(app.rateLimiterAPP.RateLimitWrapper, engine.PanicWrapper, engine.LogWrapper)
-	ginEngine.Use(sessions.Sessions("session", dep.getSessionStore()))
+	ginEngine.Use(dep.getSessionHandler())
 	controllers := app.GetRouterGroups()
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {

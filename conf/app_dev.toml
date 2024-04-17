@@ -12,8 +12,7 @@ maxIdleTime = "10s"
 maxLifeTime = "1h"
 
 [cache]
-host = "127.0.0.1"
-port = 6379
+addr = "127.0.0.1:6379"
 
 [middleware]
 # 是否在response body中写入trace id，response header中的trace id不受此控制

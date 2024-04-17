@@ -1,6 +1,9 @@
 package engine
 
-import "github.com/gin-gonic/gin"
+import (
+	jsonLib "encoding/json"
+	"github.com/gin-gonic/gin"
+)
 
 const (
 	startTimeKey = "__start_time"
@@ -15,8 +18,14 @@ type UserInfo struct {
 	IP        string `json:"ip"`
 }
 
+func (u *UserInfo) String() string {
+	b, _ := jsonLib.Marshal(u)
+
+	return string(b)
+}
+
 type HTTPAPIJSONHandler func(ctx Context) (any, error)
-type HTTPAPIJSONUserHandler func(ctx Context, userInfo UserInfo) (any, error)
+type HTTPAPIJSONUserHandler func(ctx Context, userInfo *UserInfo) (any, error)
 type RawHandler func(ctx *gin.Context) error
 
 type JSONResponse struct {

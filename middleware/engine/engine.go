@@ -29,7 +29,7 @@ type Context interface {
 	Data(code int, contentType string, data []byte)
 	Header(key, value string)
 	GetCtx() context.Context
-	SetSession(userInfo UserInfo)
+	SetSession(userInfo *UserInfo) error
 	SignOut() error
 }
 
@@ -120,10 +120,10 @@ func (c *HttpContext) GetCtx() context.Context {
 	return c.Ctx
 }
 
-func (c *HttpContext) SetSession(userInfo UserInfo) {
+func (c *HttpContext) SetSession(userInfo *UserInfo) error {
 	session := sessions.Default(c.ginCtx)
-	session.Set(UserInfoKey, userInfo)
-	_ = session.Save()
+	session.Set(UserInfoKey, userInfo.String())
+	return session.Save()
 }
 
 func (c *HttpContext) SignOut() error {
@@ -221,8 +221,9 @@ func (engine *Engine) JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain
 				"message": "auth error",
 			})
 			ctx.Abort()
+			return
 		}
-		resp, err := handler(NewHttpContext(ctx), rawUserInfo.(UserInfo))
+		resp, err := handler(NewHttpContext(ctx), rawUserInfo.(*UserInfo))
 		json(ctx, resp, err)
 		if err != nil {
 			_ = ctx.Error(err)

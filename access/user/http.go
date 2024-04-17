@@ -61,12 +61,14 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx.SetSession(engine.UserInfo{
+	if err = ctx.SetSession(&engine.UserInfo{
 		ID:        userInfo.ID,
 		Username:  userInfo.Username,
 		Email:     userInfo.Email,
 		LoginTime: time.Now().Unix(),
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	return userInfo, nil
 }

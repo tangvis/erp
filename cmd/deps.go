@@ -1,7 +1,8 @@
 package main
 
 import (
-	ginRedis "github.com/gin-contrib/sessions/redis"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
@@ -47,8 +48,8 @@ func (d *dependence) initCache() {
 	d.Cache = redis.NewCache(cacheConfig)
 }
 
-func (d *dependence) getSessionStore() ginRedis.Store {
-	return d.Cache.GetSessionStore()
+func (d *dependence) getSessionHandler() gin.HandlerFunc {
+	return sessions.Sessions("session_id", d.Cache.GetSessionStore())
 }
 
 func initLogger() {

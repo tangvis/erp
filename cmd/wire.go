@@ -76,7 +76,7 @@ func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) err
 func (app *application) InitCommonRateLimiter(g *gin.Engine) {
 	m := make(map[string]int)
 	for _, route := range g.Routes() {
-		m[route.Path] = 1
+		m[route.Path] = 1000
 	}
 	app.rateLimiterAPP.InitPublic(m)
 }

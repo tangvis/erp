@@ -6,6 +6,7 @@ import (
 	jsonLib "encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"reflect"
@@ -27,10 +28,14 @@ type Context interface {
 	Data(code int, contentType string, data []byte)
 	Header(key, value string)
 	GetCtx() context.Context
+	SetSession(userInfo *UserInfo) error
+	HasLogin() *UserInfo
+	LogOut() error
 }
 
 type HTTPEngine interface {
 	JSON(handler HTTPAPIJSONHandler) gin.HandlersChain
+	JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain
 }
 
 type HttpContext struct {
@@ -115,6 +120,29 @@ func (c *HttpContext) GetCtx() context.Context {
 	return c.Ctx
 }
 
+func (c *HttpContext) SetSession(userInfo *UserInfo) error {
+	session := sessions.Default(c.ginCtx)
+	session.Set(UserInfoKey, userInfo.String())
+	return session.Save()
+}
+
+func (c *HttpContext) HasLogin() *UserInfo {
+	session := sessions.Default(c.ginCtx)
+	rawUserInfo := session.Get(UserInfoKey)
+	if rawUserInfo == nil {
+		return nil
+	}
+	var userInfo UserInfo
+	_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
+	return &userInfo
+}
+
+func (c *HttpContext) LogOut() error {
+	session := sessions.Default(c.ginCtx)
+	session.Clear()
+	return session.Save()
+}
+
 func NewHttpContext(ginCtx *gin.Context) Context {
 	return &HttpContext{
 		ginCtx: ginCtx,
@@ -193,7 +221,24 @@ func (engine *Engine) JSON(handler HTTPAPIJSONHandler) gin.HandlersChain {
 			_ = ctx.Error(err)
 		}
 	}
-	return append(gin.HandlersChain{PanicWrapper, LogWrapper}, coreHandler)
+	return gin.HandlersChain{coreHandler}
+}
+
+func (engine *Engine) JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain {
+	coreHandler := func(ctx *gin.Context) {
+		rawUserInfo, exists := ctx.Get(UserInfoKey)
+		if !exists {
+			json(ctx, nil, common.ErrAuth)
+			ctx.Abort()
+			return
+		}
+		resp, err := handler(NewHttpContext(ctx), rawUserInfo.(*UserInfo))
+		json(ctx, resp, err)
+		if err != nil {
+			_ = ctx.Error(err)
+		}
+	}
+	return gin.HandlersChain{Auth(), coreHandler}
 }
 
 type Controller interface {

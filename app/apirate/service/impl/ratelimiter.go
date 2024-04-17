@@ -40,6 +40,7 @@ func (l *Limiters) RateLimitWrapper(c *gin.Context) {
 	if !allow {
 		c.String(http.StatusTooManyRequests, "too many requests")
 		c.Abort()
+		return
 	}
 	c.Next()
 	// 只有成功返回才会扣减

@@ -88,12 +88,12 @@ func (u User) login(ctx context.Context, info, passwd string, f func(ctx context
 	user, err := f(ctx, info)
 	if err != nil {
 		if errors.Is(err, common.ErrDBRecordNotFound) {
-			return define.UserEntity{}, common.ErrUserInfoWrong
+			return define.UserEntity{}, common.ErrUserInfo
 		}
 		return define.UserEntity{}, err
 	}
 	if user.Passwd != passwd {
-		return define.UserEntity{}, common.ErrUserInfoWrong
+		return define.UserEntity{}, common.ErrUserInfo
 	}
 	return define.UserEntity{
 		ID:          user.ID,

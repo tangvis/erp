@@ -4,7 +4,7 @@ import (
 	jsonLib "encoding/json"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/tangvis/erp/common"
 )
 
 func Auth() gin.HandlerFunc {
@@ -12,10 +12,7 @@ func Auth() gin.HandlerFunc {
 		session := sessions.Default(c)
 		rawUserInfo := session.Get(UserInfoKey)
 		if rawUserInfo == nil {
-			// todo 错误返回
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "not authed",
-			})
+			json(c, nil, common.ErrAuth)
 			c.Abort()
 			return
 		}

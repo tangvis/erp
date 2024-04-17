@@ -52,6 +52,14 @@ func (c *Controller) Signup(ctx engine.Context) (any, error) {
 }
 
 func (c *Controller) Login(ctx engine.Context) (any, error) {
+	if user := ctx.HasLogin(); user != nil {
+		return define.UserEntity{
+			ID:          user.ID,
+			Username:    user.Username,
+			PhoneNumber: user.PhoneNumber,
+			Email:       user.Email,
+		}, nil
+	}
 	var req define.LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err
@@ -62,10 +70,11 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 		return nil, err
 	}
 	if err = ctx.SetSession(&engine.UserInfo{
-		ID:        userInfo.ID,
-		Username:  userInfo.Username,
-		Email:     userInfo.Email,
-		LoginTime: time.Now().Unix(),
+		ID:          userInfo.ID,
+		Username:    userInfo.Username,
+		Email:       userInfo.Email,
+		PhoneNumber: userInfo.PhoneNumber,
+		LoginTime:   time.Now().Unix(),
 	}); err != nil {
 		return nil, err
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"net/http"
 	"reflect"
 	"time"
 
@@ -30,6 +29,7 @@ type Context interface {
 	Header(key, value string)
 	GetCtx() context.Context
 	SetSession(userInfo *UserInfo) error
+	HasLogin() *UserInfo
 	SignOut() error
 }
 
@@ -126,6 +126,17 @@ func (c *HttpContext) SetSession(userInfo *UserInfo) error {
 	return session.Save()
 }
 
+func (c *HttpContext) HasLogin() *UserInfo {
+	session := sessions.Default(c.ginCtx)
+	rawUserInfo := session.Get(UserInfoKey)
+	if rawUserInfo == nil {
+		return nil
+	}
+	var userInfo UserInfo
+	_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
+	return &userInfo
+}
+
 func (c *HttpContext) SignOut() error {
 	session := sessions.Default(c.ginCtx)
 	session.Clear()
@@ -217,9 +228,7 @@ func (engine *Engine) JSONAuth(handler HTTPAPIJSONUserHandler) gin.HandlersChain
 	coreHandler := func(ctx *gin.Context) {
 		rawUserInfo, exists := ctx.Get(UserInfoKey)
 		if !exists {
-			ctx.JSON(http.StatusForbidden, gin.H{
-				"message": "auth error",
-			})
+			json(ctx, nil, common.ErrAuth)
 			ctx.Abort()
 			return
 		}

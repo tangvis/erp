@@ -11,11 +11,12 @@ const (
 )
 
 type UserInfo struct {
-	ID        uint64 `json:"id"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	LoginTime int64  `json:"login_time"`
-	IP        string `json:"ip"`
+	ID          uint64 `json:"id"`
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	LoginTime   int64  `json:"login_time"`
+	IP          string `json:"ip"`
 }
 
 func (u *UserInfo) String() string {

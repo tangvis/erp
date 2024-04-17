@@ -13,8 +13,9 @@ var (
 	ErrPingFailed     = ecode.NewErrorConf(ErrConfPing)
 	ErrPingFailedTest = ErrPingFailed.New("ping failed test")
 
-	ErrUser          = ecode.NewErrorConf(ecode.NewBusinessErrorCode(ecode.User, 1))
-	ErrUserInfoWrong = ErrUser.New("username or password error")
+	ErrUser     = ecode.NewErrorConf(ecode.NewBusinessErrorCode(ecode.User, 1))
+	ErrUserInfo = ErrUser.New("username or password error")
+	ErrAuth     = ErrUser.New("auth failed")
 
 	ErrDB               = ecode.NewSystemErrorCode(ecode.SystemDB, 10)
 	ErrDBConf           = ecode.NewErrorConf(ErrDB)

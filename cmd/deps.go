@@ -7,7 +7,7 @@ import (
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
 	getter "github.com/tangvis/erp/conf/config"
-	logutil "github.com/tangvis/erp/libs/log"
+	logutil "github.com/tangvis/erp/pkg/log"
 )
 
 type dependence struct {

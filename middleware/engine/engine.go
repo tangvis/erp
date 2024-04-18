@@ -14,8 +14,8 @@ import (
 
 	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/conf/config"
-	ctxUtil "github.com/tangvis/erp/libs/context"
-	"github.com/tangvis/erp/libs/ecode"
+	ctxUtil "github.com/tangvis/erp/pkg/context"
+	"github.com/tangvis/erp/pkg/ecode"
 )
 
 type Context interface {

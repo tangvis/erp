@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/tangvis/erp/libs/ecode"
+	"github.com/tangvis/erp/pkg/ecode"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/tangvis/erp/common"
-	"github.com/tangvis/erp/libs/crypto"
+	"github.com/tangvis/erp/pkg/crypto"
 
 	"github.com/tangvis/erp/app/user/define"
 	userAPP "github.com/tangvis/erp/app/user/service"

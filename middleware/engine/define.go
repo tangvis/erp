@@ -10,12 +10,6 @@ const (
 	UserInfoKey  = "user_info"
 )
 
-type Config struct {
-	ResponseTraceID bool `toml:"response_trace_id"`
-	RequestLog      bool `toml:"log_request"`
-	PublicQpsLimit  int  `toml:"public_qps_limit"`
-}
-
 type UserInfo struct {
 	ID          uint64 `json:"id"`
 	Username    string `json:"username"`

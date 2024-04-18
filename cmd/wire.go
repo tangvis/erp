@@ -55,8 +55,8 @@ func initializeApplication(
 }
 
 func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) error {
-	ginEngine.Use(app.rateLimiterAPP.RateLimitWrapper, engine.PanicWrapper, engine.LogWrapper)
 	ginEngine.Use(dep.getSessionHandler())
+	ginEngine.Use(app.rateLimiterAPP.RateLimitWrapper, engine.PanicWrapper, engine.LogWrapper)
 	controllers := app.GetRouterGroups()
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {

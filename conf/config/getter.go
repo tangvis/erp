@@ -7,7 +7,6 @@ import (
 
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
-	"github.com/tangvis/erp/middleware/engine"
 )
 
 var Config Getter
@@ -39,7 +38,7 @@ func initViper() *viper.Viper {
 type Getter interface {
 	GetMySQLConfig() (mysql.Config, error)
 	GetCacheConfig() (redis.Config, error)
-	GetMiddleWareConfig() (engine.Config, error)
+	GetMiddleWareConfig() (MiddlewareConfig, error)
 	GetEnableResponseTraceID() bool
 	GetEnableLogRequest() bool
 }
@@ -50,9 +49,9 @@ type configGetter struct {
 
 func (c configGetter) GetCacheConfig() (redis.Config, error) {
 	var tempCfg struct {
-		Addr   string `toml:"addr"`
-		Passwd string `toml:"passwd"`
-		DB     int    `toml:"db"`
+		Addr   string
+		Passwd string
+		DB     int
 	}
 	if err := c.viper.UnmarshalKey("cache", &tempCfg); err != nil {
 		return redis.Config{}, err
@@ -73,11 +72,11 @@ func NewConfigGetter(vp *viper.Viper) Getter {
 
 func (c configGetter) GetMySQLConfig() (mysql.Config, error) {
 	var tempCfg struct {
-		DSN         string `toml:"dsn"`
-		MaxIdle     int    `toml:"max_idle"`
-		MaxOpen     int    `toml:"max_open"`
-		MaxIdleTime string `toml:"max_idle_time"`
-		MaxLifeTime string `toml:"max_life_time"`
+		DSN         string
+		MaxIdle     int
+		MaxOpen     int
+		MaxIdleTime string
+		MaxLifeTime string
 	}
 	if err := c.viper.UnmarshalKey("mysql", &tempCfg); err != nil {
 		return mysql.Config{}, err
@@ -104,10 +103,10 @@ func (c configGetter) GetEnableResponseTraceID() bool {
 	return c.viper.GetBool("middleware.response_trace_id")
 }
 
-func (c configGetter) GetMiddleWareConfig() (engine.Config, error) {
-	var tempCfg engine.Config
+func (c configGetter) GetMiddleWareConfig() (MiddlewareConfig, error) {
+	var tempCfg MiddlewareConfig
 	if err := c.viper.UnmarshalKey("middleware", &tempCfg); err != nil {
-		return engine.Config{}, err
+		return MiddlewareConfig{}, err
 	}
 	return tempCfg, nil
 }

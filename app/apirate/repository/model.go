@@ -7,7 +7,7 @@ import (
 
 type RateSettingTab struct {
 	ID         uint64
-	UserID     string
+	UserID     uint64
 	Path       string
 	QPSLimit   int
 	TotalLimit int

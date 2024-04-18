@@ -3,10 +3,11 @@ package config
 import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/tangvis/erp/agent/mysql"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/tangvis/erp/agent/mysql"
 )
 
 func TestGetMySQLConfig(t *testing.T) {
@@ -34,7 +35,7 @@ MaxLifeTime = "1h"
 	// Assert no error returned
 	assert.NoError(t, err)
 
-	// Assert that the mysql.Config structure is correctly populated
+	// Assert that the mysql.MiddlewareConfig structure is correctly populated
 	expectedMaxIdleTime, _ := time.ParseDuration("10s")
 	expectedMaxLifeTime, _ := time.ParseDuration("1h")
 	expectedCfg := mysql.Config{

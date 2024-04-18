@@ -3,18 +3,18 @@ package repository
 import (
 	"context"
 	"time"
+
+	"github.com/tangvis/erp/agent/mysql"
 )
 
 type RateSettingTab struct {
-	ID         uint64
+	mysql.BaseModel
 	UserID     uint64
 	Path       string
 	QPSLimit   int
 	TotalLimit int
 	RateUsed   int
 	ExpireTime int64
-	Ctime      int64
-	Mtime      int64
 }
 
 func (r *RateSettingTab) Valid() bool {

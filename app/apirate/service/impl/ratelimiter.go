@@ -115,7 +115,7 @@ type Limiter struct {
 
 // NewRateLimiter creates a new RateLimiter instance.
 func NewRateLimiter(userID, apiPath string, qps, totalAllowed int) *Limiter {
-	limiter := rate.NewLimiter(rate.Limit(qps), 1) // Bucket size of 1 to smooth the rate limiting
+	limiter := rate.NewLimiter(rate.Limit(qps), qps)
 	return &Limiter{
 		UserID:       userID,
 		APIPath:      apiPath,

@@ -17,6 +17,7 @@ import (
 	"github.com/tangvis/erp/app/apirate/service"
 	"github.com/tangvis/erp/app/ping"
 	userAPP "github.com/tangvis/erp/app/user"
+	getter "github.com/tangvis/erp/conf/config"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -74,9 +75,13 @@ func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) err
 }
 
 func (app *application) InitCommonRateLimiter(g *gin.Engine) {
+	cfg, err := getter.Config.GetMiddleWareConfig()
+	if err != nil {
+		panic(err)
+	}
 	m := make(map[string]int)
 	for _, route := range g.Routes() {
-		m[route.Path] = 1
+		m[route.Path] = cfg.PublicQpsLimit
 	}
 	app.rateLimiterAPP.InitPublic(m)
 }

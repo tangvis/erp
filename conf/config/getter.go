@@ -7,6 +7,7 @@ import (
 
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/agent/redis"
+	"github.com/tangvis/erp/middleware/engine"
 )
 
 var Config Getter
@@ -38,6 +39,7 @@ func initViper() *viper.Viper {
 type Getter interface {
 	GetMySQLConfig() (mysql.Config, error)
 	GetCacheConfig() (redis.Config, error)
+	GetMiddleWareConfig() (engine.Config, error)
 	GetEnableResponseTraceID() bool
 	GetEnableLogRequest() bool
 }
@@ -100,6 +102,14 @@ func (c configGetter) GetMySQLConfig() (mysql.Config, error) {
 
 func (c configGetter) GetEnableResponseTraceID() bool {
 	return c.viper.GetBool("middleware.response_trace_id")
+}
+
+func (c configGetter) GetMiddleWareConfig() (engine.Config, error) {
+	var tempCfg engine.Config
+	if err := c.viper.UnmarshalKey("middleware", &tempCfg); err != nil {
+		return engine.Config{}, err
+	}
+	return tempCfg, nil
 }
 
 func (c configGetter) GetEnableLogRequest() bool {

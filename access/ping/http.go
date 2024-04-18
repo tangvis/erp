@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/tangvis/erp/app/ping/service"
+	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
@@ -29,7 +30,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 	}
 }
 
-func (c *Controller) Ping(ctx engine.Context, userInfo *engine.UserInfo) (any, error) {
+func (c *Controller) Ping(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
 	return c.biz.Ping(), nil
 }
 

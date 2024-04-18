@@ -14,7 +14,7 @@ import (
 
 	"github.com/tangvis/erp/app/apirate/repository"
 	"github.com/tangvis/erp/app/apirate/service"
-	"github.com/tangvis/erp/middleware/engine"
+	"github.com/tangvis/erp/common"
 )
 
 const (
@@ -40,8 +40,8 @@ func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
 
 func (l *Limiters) RateLimitWrapper(c *gin.Context) {
 	session := sessions.Default(c)
-	rawUserInfo := session.Get(engine.UserInfoKey)
-	var userInfo engine.UserInfo
+	rawUserInfo := session.Get(common.UserInfoKey)
+	var userInfo common.UserInfo
 	if rawUserInfo != nil {
 		_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
 	}

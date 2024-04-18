@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/tangvis/erp/common"
 	"github.com/tangvis/erp/libs/crypto"
 
 	"github.com/tangvis/erp/app/user/define"
@@ -69,7 +70,7 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = ctx.SetSession(&engine.UserInfo{
+	if err = ctx.SetSession(&common.UserInfo{
 		ID:          userInfo.ID,
 		Username:    userInfo.Username,
 		Email:       userInfo.Email,

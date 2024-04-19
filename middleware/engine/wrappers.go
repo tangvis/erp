@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/tangvis/erp/conf/config"
-	ctxUtil "github.com/tangvis/erp/libs/context"
-	logutil "github.com/tangvis/erp/libs/log"
+	ctxUtil "github.com/tangvis/erp/pkg/context"
+	logutil "github.com/tangvis/erp/pkg/log"
 )
 
 func startRequest(ctx *gin.Context) {

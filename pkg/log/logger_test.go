@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 	"testing"
 
-	ctxUtil "github.com/tangvis/erp/libs/context"
+	ctxUtil "github.com/tangvis/erp/pkg/context"
 )
 
 func TestInfo(t *testing.T) {

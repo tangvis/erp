@@ -55,8 +55,7 @@ func initializeApplication(
 }
 
 func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) error {
-	ginEngine.Use(app.rateLimiterAPP.RateLimitWrapper, engine.PanicWrapper, engine.LogWrapper)
-	ginEngine.Use(dep.getSessionHandler())
+	app.userMiddlewares(ginEngine, dep)
 	controllers := app.GetRouterGroups()
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {
@@ -72,6 +71,15 @@ func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) err
 	}
 	app.InitCommonRateLimiter(ginEngine)
 	return nil
+}
+
+func (app *application) userMiddlewares(ginEngine *gin.Engine, dep *dependence) {
+	ginEngine.Use(
+		dep.getSessionHandler(),
+		app.rateLimiterAPP.RateLimitWrapper,
+		engine.PanicWrapper,
+		engine.LogWrapper,
+	)
 }
 
 func (app *application) InitCommonRateLimiter(g *gin.Engine) {

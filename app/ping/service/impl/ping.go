@@ -7,7 +7,7 @@ import (
 	"github.com/tangvis/erp/agent/redis"
 	"github.com/tangvis/erp/app/ping/service"
 	"github.com/tangvis/erp/common"
-	logutil "github.com/tangvis/erp/libs/log"
+	logutil "github.com/tangvis/erp/pkg/log"
 )
 
 type Ping struct {

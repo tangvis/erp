@@ -2,7 +2,9 @@ package impl
 
 import (
 	"context"
+	jsonLib "encoding/json"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 	"math"
@@ -12,10 +14,11 @@ import (
 
 	"github.com/tangvis/erp/app/apirate/repository"
 	"github.com/tangvis/erp/app/apirate/service"
+	"github.com/tangvis/erp/common"
 )
 
 const (
-	publicKey = "pub_key" // 如果没有配置限流，应用一个全局的
+	publicKey = math.MaxUint64 // 如果没有配置限流，应用一个全局的
 )
 
 type Limiters struct {
@@ -36,7 +39,13 @@ func (l *Limiters) InitPublic(publicLimitSetting map[string]int) {
 }
 
 func (l *Limiters) RateLimitWrapper(c *gin.Context) {
-	success, allow := l.Allow("", c.Request.URL.Path)
+	session := sessions.Default(c)
+	rawUserInfo := session.Get(common.UserInfoKey)
+	var userInfo common.UserInfo
+	if rawUserInfo != nil {
+		_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
+	}
+	success, allow := l.Allow(userInfo.ID, c.Request.URL.Path)
 	if !allow {
 		c.String(http.StatusTooManyRequests, "too many requests")
 		c.Abort()
@@ -53,7 +62,7 @@ func (l *Limiters) GetPublicLimiter(path string) *Limiter {
 	return l.pool[limiterID(publicKey, path)]
 }
 
-func (l *Limiters) Allow(userID, path string) (func(), bool) {
+func (l *Limiters) Allow(userID uint64, path string) (func(), bool) {
 	var limiter *Limiter
 	successAction := func() {
 		if limiter != nil {
@@ -71,8 +80,8 @@ func (l *Limiters) Allow(userID, path string) (func(), bool) {
 	return successAction, limiter.Allow()
 }
 
-func limiterID(userID, path string) string {
-	return fmt.Sprintf("%s:%s", userID, path)
+func limiterID(userID uint64, path string) string {
+	return fmt.Sprintf("%d:%s", userID, path)
 }
 
 func NewLimiters(
@@ -103,7 +112,7 @@ func NewLimiters(
 
 // Limiter holds the limiter settings and the limiter itself.
 type Limiter struct {
-	UserID       string
+	UserID       uint64
 	APIPath      string
 	QPS          int // Queries per second
 	TotalAllowed int
@@ -114,7 +123,7 @@ type Limiter struct {
 }
 
 // NewRateLimiter creates a new RateLimiter instance.
-func NewRateLimiter(userID, apiPath string, qps, totalAllowed int) *Limiter {
+func NewRateLimiter(userID uint64, apiPath string, qps, totalAllowed int) *Limiter {
 	limiter := rate.NewLimiter(rate.Limit(qps), qps)
 	return &Limiter{
 		UserID:       userID,

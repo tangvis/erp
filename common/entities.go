@@ -1,6 +1,6 @@
 package common
 
-import json2 "encoding/json"
+import "encoding/json"
 
 type UserInfo struct {
 	ID          uint64 `json:"id"`
@@ -12,7 +12,7 @@ type UserInfo struct {
 }
 
 func (u *UserInfo) String() string {
-	b, _ := json2.Marshal(u)
+	b, _ := json.Marshal(u)
 
 	return string(b)
 }

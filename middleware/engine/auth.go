@@ -11,14 +11,22 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		rawUserInfo := session.Get(common.UserInfoKey)
-		if rawUserInfo == nil {
+		user := userInfo(session.Get(common.UserInfoKey))
+		if user == nil {
 			json(c, nil, common.ErrAuth)
 			c.Abort()
 			return
 		}
-		var userInfo common.UserInfo
-		_ = jsonLib.Unmarshal([]byte(rawUserInfo.(string)), &userInfo)
-		c.Set(common.UserInfoKey, &userInfo)
+		c.Set(common.UserInfoKey, user)
 	}
+}
+
+func userInfo(v any) *common.UserInfo {
+	if v == nil {
+		return nil
+	}
+	var user common.UserInfo
+	_ = jsonLib.Unmarshal([]byte(v.(string)), &user)
+
+	return &user
 }

@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/tangvis/erp/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,7 @@ type application struct {
 	userController *userHTTP.Controller
 
 	rateLimiterAPP service.APP
+	sessionStore   engine.Store
 }
 
 func (app *application) GetRouterGroups() []engine.Controller {
@@ -40,7 +42,7 @@ func initializeApplication(
 ) (*application, error) {
 	wire.Build(
 		ping.ServiceSet,
-		engine.Set,
+		middleware.Set,
 		apirate.ServiceSet,
 		userAPP.ServiceSet,
 		access.HTTPSet,
@@ -55,7 +57,7 @@ func initializeApplication(
 }
 
 func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) error {
-	app.userMiddlewares(ginEngine, dep)
+	app.userMiddlewares(ginEngine)
 	controllers := app.GetRouterGroups()
 	for _, v := range controllers {
 		for _, router := range v.URLPatterns() {
@@ -73,9 +75,9 @@ func (app *application) registerHTTP(ginEngine *gin.Engine, dep *dependence) err
 	return nil
 }
 
-func (app *application) userMiddlewares(ginEngine *gin.Engine, dep *dependence) {
+func (app *application) userMiddlewares(ginEngine *gin.Engine) {
 	ginEngine.Use(
-		dep.getSessionHandler(),
+		app.sessionStore.SessionHandler(),
 		app.rateLimiterAPP.RateLimitWrapper,
 		engine.PanicWrapper,
 		engine.LogWrapper,

@@ -26,7 +26,6 @@ import (
 // Amount of time for cookies/redis keys to expire.
 const (
 	sessionExpire = 86400 * 30
-	UserIDKey     = "__user_id"
 	keyPrefix     = "session_"
 )
 

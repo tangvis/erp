@@ -32,6 +32,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Signup)),
 		engine.NewRouter(http.MethodPost, "/user/login", c.engine.JSON(c.Login)),
 		engine.NewRouter(http.MethodPost, "/user/logout", c.engine.JSON(c.LogOut)),
+		engine.NewRouter(http.MethodGet, "/user/online_list", c.engine.JSON(c.OnlineUsers)),
 	}
 }
 
@@ -85,4 +86,8 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 
 func (c *Controller) LogOut(ctx engine.Context) (any, error) {
 	return nil, ctx.LogOut()
+}
+
+func (c *Controller) OnlineUsers(ctx engine.Context) (any, error) {
+	return c.app.OnlineUsers(ctx.GetCtx())
 }

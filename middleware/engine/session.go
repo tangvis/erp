@@ -32,6 +32,7 @@ const (
 type Store interface {
 	ginSession.Store
 	SessionHandler() gin.HandlerFunc
+	OnlineUsers(ctx context.Context) ([]common.UserInfo, error)
 }
 
 // SessionSerializer provides an interface hook for alternative serializers
@@ -273,6 +274,33 @@ func (s *SessionStore) delete(ctx context.Context, session *sessions.Session) er
 	return s.cli.Del(ctx, s.keyPrefix+session.ID)
 }
 
+func (s *SessionStore) OnlineUsers(ctx context.Context) ([]common.UserInfo, error) {
+	keys, err := s.cli.Keys(ctx, s.keyPrefix+"*")
+	if err != nil {
+		return nil, err
+	}
+	rawSessions, err := s.cli.MGet(ctx, keys...)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]common.UserInfo, 0, len(rawSessions))
+	for _, raw := range rawSessions {
+		b, err := rediGo.Bytes(raw, nil)
+		if err != nil {
+			continue
+		}
+		var session sessions.Session
+		if err = s.serializer.Deserialize(b, &session); err != nil {
+			continue
+		}
+		user := userInfo(session.Values[common.UserInfoKey])
+		if user == nil {
+			continue
+		}
+		result = append(result, *user)
+	}
+	return result, nil
+}
 func (s *SessionStore) SessionHandler() gin.HandlerFunc {
 	return s.sessionHandler
 }

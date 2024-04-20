@@ -7,17 +7,21 @@ import (
 	"github.com/tangvis/erp/app/user/repository"
 	"github.com/tangvis/erp/app/user/service"
 	"github.com/tangvis/erp/common"
+	"github.com/tangvis/erp/middleware/engine"
 )
 
 type User struct {
-	repo repository.User
+	repo         repository.User
+	sessionStore engine.Store
 }
 
 func NewUserAPP(
 	repo repository.User,
+	sessionStore engine.Store,
 ) service.APP {
 	return &User{
-		repo: repo,
+		repo:         repo,
+		sessionStore: sessionStore,
 	}
 }
 
@@ -101,6 +105,24 @@ func (u User) login(ctx context.Context, info, passwd string, f func(ctx context
 		PhoneNumber: user.PhoneNumber,
 		Email:       user.Email,
 	}, nil
+}
+
+func (u User) OnlineUsers(ctx context.Context) ([]define.UserEntity, error) {
+	onlineUsers, err := u.sessionStore.OnlineUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]define.UserEntity, 0, len(onlineUsers))
+	for _, user := range onlineUsers {
+		result = append(result, define.UserEntity{
+			ID:          user.ID,
+			Username:    user.Username,
+			PhoneNumber: user.PhoneNumber,
+			Email:       user.Email,
+		})
+	}
+
+	return result, nil
 }
 
 func (u User) checkInfoAvailable(ctx context.Context, user define.UserEntity) error {

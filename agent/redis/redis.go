@@ -18,6 +18,8 @@ type Cache interface {
 	GetBytes(ctx context.Context, key string) ([]byte, error)
 	GetExUnmarshal(ctx context.Context, key string, value any, expiration time.Duration) error
 	Del(ctx context.Context, key string) error
+	Keys(ctx context.Context, pattern string) ([]string, error)
+	MGet(ctx context.Context, keys ...string) ([]any, error)
 }
 
 type Client struct {
@@ -54,6 +56,14 @@ func (c Client) GetExUnmarshal(ctx context.Context, key string, value any, expir
 
 func (c Client) GetBytes(ctx context.Context, key string) ([]byte, error) {
 	return c.Cli.Get(ctx, key).Bytes()
+}
+
+func (c Client) Keys(ctx context.Context, pattern string) ([]string, error) {
+	return c.Cli.Keys(ctx, pattern).Result()
+}
+
+func (c Client) MGet(ctx context.Context, keys ...string) ([]any, error) {
+	return c.Cli.MGet(ctx, keys...).Result()
 }
 
 func NewCache(config Config) Cache {

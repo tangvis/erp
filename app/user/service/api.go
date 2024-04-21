@@ -11,5 +11,5 @@ type APP interface {
 	GetUserByID(ctx context.Context, id uint64) (repository.UserTab, error)
 	CreateUser(ctx context.Context, user define.UserEntity) (define.UserEntity, error)
 	Login(ctx context.Context, req define.LoginRequest) (define.UserEntity, error)
-	OnlineUsers(ctx context.Context) ([]define.UserEntity, error)
+	OnlineUsers(ctx context.Context, id uint64) ([]define.UserEntity, error)
 }

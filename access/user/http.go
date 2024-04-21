@@ -32,7 +32,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 		engine.NewRouter(http.MethodPost, "/user/signup", c.engine.JSON(c.Signup)),
 		engine.NewRouter(http.MethodPost, "/user/login", c.engine.JSON(c.Login)),
 		engine.NewRouter(http.MethodPost, "/user/logout", c.engine.JSON(c.LogOut)),
-		engine.NewRouter(http.MethodGet, "/user/online_list", c.engine.JSON(c.OnlineUsers)),
+		engine.NewRouter(http.MethodPost, "/user/online_list", c.engine.JSON(c.OnlineUsers)),
 	}
 }
 
@@ -70,7 +70,7 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 	req.Password = crypto.GetMD5Hash(req.Password)
 	userInfo, err := c.app.Login(ctx, req)
 	if err != nil {
-		return nil, err
+		return userInfo, err
 	}
 	if err = ctx.SetSession(&common.UserInfo{
 		ID:          userInfo.ID,
@@ -90,5 +90,9 @@ func (c *Controller) LogOut(ctx engine.Context) (any, error) {
 }
 
 func (c *Controller) OnlineUsers(ctx engine.Context) (any, error) {
-	return c.app.OnlineUsers(ctx.GetCtx())
+	var req define.OnlineUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return c.app.OnlineUsers(ctx.GetCtx(), req.ID)
 }

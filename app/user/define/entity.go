@@ -12,6 +12,7 @@ type UserEntity struct {
 	Email       string     `json:"email,omitempty"`
 	LoginTime   int64      `json:"login_time,omitempty"`
 	Status      UserStatus `json:"-"`
+	SessionID   string     `json:"session_id,omitempty"`
 
 	Ctime int64 `json:"-"`
 	Mtime int64 `json:"-"`
@@ -48,4 +49,8 @@ func (u *LoginRequest) Validate() error {
 		return fmt.Errorf("username or email is needed")
 	}
 	return nil
+}
+
+type OnlineUserRequest struct {
+	ID uint64 `json:"id"`
 }

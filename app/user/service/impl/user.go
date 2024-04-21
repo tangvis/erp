@@ -99,16 +99,24 @@ func (u User) login(ctx context.Context, info, passwd string, f func(ctx context
 	if user.Passwd != passwd {
 		return define.UserEntity{}, common.ErrUserInfo
 	}
-	return define.UserEntity{
+	onlineUsers, err := u.sessionStore.OnlineUsers(ctx, user.ID)
+	if err != nil {
+		return define.UserEntity{}, err
+	}
+	resp := define.UserEntity{
 		ID:          user.ID,
 		Username:    user.Username,
 		PhoneNumber: user.PhoneNumber,
 		Email:       user.Email,
-	}, nil
+	}
+	if len(onlineUsers) >= define.MaxOnlineForAUser {
+		return resp, common.ErrUserTooManyLogin
+	}
+	return resp, nil
 }
 
-func (u User) OnlineUsers(ctx context.Context) ([]define.UserEntity, error) {
-	onlineUsers, err := u.sessionStore.OnlineUsers(ctx)
+func (u User) OnlineUsers(ctx context.Context, id uint64) ([]define.UserEntity, error) {
+	onlineUsers, err := u.sessionStore.OnlineUsers(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +128,7 @@ func (u User) OnlineUsers(ctx context.Context) ([]define.UserEntity, error) {
 			PhoneNumber: user.PhoneNumber,
 			Email:       user.Email,
 			LoginTime:   user.LoginTime,
+			SessionID:   user.SessionID,
 		})
 	}
 

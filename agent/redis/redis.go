@@ -17,7 +17,7 @@ type Cache interface {
 	SetExMarshal(ctx context.Context, key string, value any, expiration time.Duration) error
 	GetBytes(ctx context.Context, key string) ([]byte, error)
 	GetExUnmarshal(ctx context.Context, key string, value any, expiration time.Duration) error
-	Del(ctx context.Context, key string) error
+	Del(ctx context.Context, key ...string) error
 	Keys(ctx context.Context, pattern string) ([]string, error)
 	MGet(ctx context.Context, keys ...string) ([]any, error)
 }
@@ -42,8 +42,8 @@ func (c Client) SetExMarshal(ctx context.Context, key string, value any, expirat
 	return c.Cli.SetEx(ctx, key, b, expiration).Err()
 }
 
-func (c Client) Del(ctx context.Context, key string) error {
-	return c.Cli.Del(ctx, key).Err()
+func (c Client) Del(ctx context.Context, key ...string) error {
+	return c.Cli.Del(ctx, key...).Err()
 }
 
 func (c Client) GetExUnmarshal(ctx context.Context, key string, value any, expiration time.Duration) error {

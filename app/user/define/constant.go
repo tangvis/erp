@@ -1,5 +1,7 @@
 package define
 
-const ()
+const (
+	MaxOnlineForAUser = 3
+)
 
 type UserStatus int8

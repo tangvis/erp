@@ -32,7 +32,8 @@ const (
 type Store interface {
 	ginSession.Store
 	SessionHandler() gin.HandlerFunc
-	OnlineUsers(ctx context.Context) ([]common.UserInfo, error)
+	OnlineUsers(ctx context.Context, id uint64) ([]common.UserInfo, error)
+	ForeLogout(ctx context.Context, id uint64, sid string) error
 }
 
 // SessionSerializer provides an interface hook for alternative serializers
@@ -80,7 +81,7 @@ type GobSerializer struct{}
 func (s GobSerializer) Serialize(ss *sessions.Session) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
-	err := enc.Encode(ss.Values)
+	err := enc.Encode(ss)
 	if err == nil {
 		return buf.Bytes(), nil
 	}
@@ -90,7 +91,7 @@ func (s GobSerializer) Serialize(ss *sessions.Session) ([]byte, error) {
 // Deserialize back to map[interface{}]interface{}
 func (s GobSerializer) Deserialize(d []byte, ss *sessions.Session) error {
 	dec := gob.NewDecoder(bytes.NewBuffer(d))
-	return dec.Decode(&ss.Values)
+	return dec.Decode(&ss)
 }
 
 // SessionStore stores sessions in a redis backend.
@@ -104,6 +105,21 @@ type SessionStore struct {
 	serializer    SessionSerializer
 
 	sessionHandler gin.HandlerFunc
+}
+
+func (s *SessionStore) ForeLogout(ctx context.Context, id uint64, sid string) error {
+	if len(sid) > 0 {
+		return s.cli.Del(ctx, sid)
+	}
+	onlineUsers, err := s.OnlineUsers(ctx, id)
+	if err != nil {
+		return err
+	}
+	sessionIDs := make([]string, 0, len(onlineUsers))
+	for _, onlineUser := range onlineUsers {
+		sessionIDs = append(sessionIDs, onlineUser.SessionID)
+	}
+	return s.cli.Del(ctx, sessionIDs...)
 }
 
 func (s *SessionStore) Options(options ginSession.Options) {
@@ -216,17 +232,18 @@ func (s *SessionStore) Save(r *http.Request, w http.ResponseWriter, session *ses
 		http.SetCookie(w, sessions.NewCookie(session.Name(), "", session.Options))
 	} else {
 		// Build an alphanumeric key for the redis store.
-		user := userInfo(session.Values[common.UserInfoKey])
+		// !!!here user.SessionID is not reliable
+		user := userInfo(session.Values[common.UserInfoKey], session.ID)
 		if user == nil {
 			return fmt.Errorf("no user info found in session: %v", session.Values)
 		}
 		if session.ID != "" {
 			sp := strings.Split(session.ID, "_")
 			if len(sp) > 0 && sp[0] != GenerateSessionID(user.ID) {
-				session.ID = NewSessionID(user.ID)
+				session.ID = newSessionID(user.ID)
 			}
 		} else {
-			session.ID = NewSessionID(user.ID)
+			session.ID = newSessionID(user.ID)
 		}
 		if err := s.save(r.Context(), session); err != nil {
 			return err
@@ -281,8 +298,12 @@ func (s *SessionStore) delete(ctx context.Context, session *sessions.Session) er
 	return s.cli.Del(ctx, s.keyPrefix+session.ID)
 }
 
-func (s *SessionStore) OnlineUsers(ctx context.Context) ([]common.UserInfo, error) {
-	keys, err := s.cli.Keys(ctx, s.keyPrefix+"*")
+func (s *SessionStore) OnlineUsers(ctx context.Context, id uint64) ([]common.UserInfo, error) {
+	prefix := s.keyPrefix
+	if id > 0 {
+		prefix = prefix + GenerateSessionID(id)
+	}
+	keys, err := s.cli.Keys(ctx, prefix+"*")
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +324,7 @@ func (s *SessionStore) OnlineUsers(ctx context.Context) ([]common.UserInfo, erro
 		if err = s.serializer.Deserialize(b, &session); err != nil {
 			continue
 		}
-		user := userInfo(session.Values[common.UserInfoKey])
+		user := userInfo(session.Values[common.UserInfoKey], s.keyPrefix+session.ID)
 		if user == nil {
 			continue
 		}
@@ -319,6 +340,6 @@ func GenerateSessionID(userID uint64) string {
 	return crypto.GetMD5Hash(fmt.Sprintf("%d", userID))
 }
 
-func NewSessionID(id uint64) string {
+func newSessionID(id uint64) string {
 	return fmt.Sprintf("%s_%s", GenerateSessionID(id), strings.TrimRight(base32.StdEncoding.EncodeToString(securecookie.GenerateRandomKey(32)), "="))
 }

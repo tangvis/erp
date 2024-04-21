@@ -10,7 +10,7 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		user := userInfo(session.Get(common.UserInfoKey))
+		user := userInfo(session.Get(common.UserInfoKey), session.ID())
 		if user == nil {
 			json(c, nil, common.ErrAuth)
 			c.Abort()
@@ -20,12 +20,16 @@ func Auth() gin.HandlerFunc {
 	}
 }
 
-func userInfo(v any) *common.UserInfo {
+func userInfo(v any, sessionID string) *common.UserInfo {
 	if v == nil {
 		return nil
 	}
 	var user common.UserInfo
-	_ = jsonLib.Unmarshal([]byte(v.(string)), &user)
+	err := jsonLib.Unmarshal([]byte(v.(string)), &user)
+	if err != nil {
+		return nil
+	}
+	user.SessionID = sessionID
 
 	return &user
 }

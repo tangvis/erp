@@ -138,7 +138,11 @@ func (c *HttpContext) HasLogin() *common.UserInfo {
 }
 
 func (c *HttpContext) LogOut() error {
-	session := sessions.Default(c.ginCtx)
+	return Logout(c.ginCtx)
+}
+
+func Logout(c *gin.Context) error {
+	session := sessions.Default(c)
 	session.Clear()
 	session.Options(sessions.Options{MaxAge: -1})
 	return session.Save()

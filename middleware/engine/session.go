@@ -161,8 +161,10 @@ func NewRedisStore(cache redis.Cache) Store {
 		cli:    cache,
 		Codecs: securecookie.CodecsFromPairs([]byte("secret")),
 		Opts: &sessions.Options{
-			Path:   "/",
-			MaxAge: sessionExpire,
+			Path:     "/",
+			MaxAge:   sessionExpire,
+			HttpOnly: true,
+			Secure:   true,
 		},
 		DefaultMaxAge: 60 * 20, // 20 minutes seems like a reasonable default
 		maxLength:     4096,
@@ -214,12 +216,17 @@ func (s *SessionStore) Save(r *http.Request, w http.ResponseWriter, session *ses
 		http.SetCookie(w, sessions.NewCookie(session.Name(), "", session.Options))
 	} else {
 		// Build an alphanumeric key for the redis store.
-		if session.ID == "" {
-			user := userInfo(session.Values[common.UserInfoKey])
-			if user == nil {
-				return fmt.Errorf("no user info found in session: %v", session.Values)
+		user := userInfo(session.Values[common.UserInfoKey])
+		if user == nil {
+			return fmt.Errorf("no user info found in session: %v", session.Values)
+		}
+		if session.ID != "" {
+			sp := strings.Split(session.ID, "_")
+			if len(sp) > 0 && sp[0] != GenerateSessionID(user.ID) {
+				session.ID = NewSessionID(user.ID)
 			}
-			session.ID = fmt.Sprintf("%s_%s", GenerateSessionID(user.ID), strings.TrimRight(base32.StdEncoding.EncodeToString(securecookie.GenerateRandomKey(32)), "="))
+		} else {
+			session.ID = NewSessionID(user.ID)
 		}
 		if err := s.save(r.Context(), session); err != nil {
 			return err
@@ -279,6 +286,9 @@ func (s *SessionStore) OnlineUsers(ctx context.Context) ([]common.UserInfo, erro
 	if err != nil {
 		return nil, err
 	}
+	if len(keys) == 0 {
+		return nil, nil
+	}
 	rawSessions, err := s.cli.MGet(ctx, keys...)
 	if err != nil {
 		return nil, err
@@ -307,4 +317,8 @@ func (s *SessionStore) SessionHandler() gin.HandlerFunc {
 
 func GenerateSessionID(userID uint64) string {
 	return crypto.GetMD5Hash(fmt.Sprintf("%d", userID))
+}
+
+func NewSessionID(id uint64) string {
+	return fmt.Sprintf("%s_%s", GenerateSessionID(id), strings.TrimRight(base32.StdEncoding.EncodeToString(securecookie.GenerateRandomKey(32)), "="))
 }

@@ -119,6 +119,7 @@ func (u User) OnlineUsers(ctx context.Context) ([]define.UserEntity, error) {
 			Username:    user.Username,
 			PhoneNumber: user.PhoneNumber,
 			Email:       user.Email,
+			LoginTime:   user.LoginTime,
 		})
 	}
 

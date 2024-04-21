@@ -54,17 +54,18 @@ func (c *Controller) Signup(ctx engine.Context) (any, error) {
 }
 
 func (c *Controller) Login(ctx engine.Context) (any, error) {
-	if user := ctx.HasLogin(); user != nil {
+	var req define.LoginRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	if user := ctx.HasLogin(); user != nil &&
+		(user.Email == req.Email || user.Username == req.Username) {
 		return define.UserEntity{
 			ID:          user.ID,
 			Username:    user.Username,
 			PhoneNumber: user.PhoneNumber,
 			Email:       user.Email,
 		}, nil
-	}
-	var req define.LoginRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		return nil, err
 	}
 	req.Password = crypto.GetMD5Hash(req.Password)
 	userInfo, err := c.app.Login(ctx, req)

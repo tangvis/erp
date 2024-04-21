@@ -1,13 +1,16 @@
 package define
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type UserEntity struct {
 	ID          uint64     `json:"id,omitempty"`
 	Username    string     `json:"username,omitempty"`
-	Passwd      string     `json:"password,omitempty"`
+	Passwd      string     `json:"-"`
 	PhoneNumber string     `json:"phone_number,omitempty"`
 	Email       string     `json:"email,omitempty"`
+	LoginTime   int64      `json:"login_time,omitempty"`
 	Status      UserStatus `json:"-"`
 
 	Ctime int64 `json:"-"`

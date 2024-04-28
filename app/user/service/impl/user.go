@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	email "github.com/tangvis/erp/app/system/email/service"
 	"github.com/tangvis/erp/app/user/define"
 	"github.com/tangvis/erp/app/user/repository"
 	"github.com/tangvis/erp/app/user/service"
@@ -15,15 +16,18 @@ import (
 type User struct {
 	repo         repository.User
 	sessionStore engine.Store
+	emailSrv     email.APP
 }
 
 func NewUserAPP(
 	repo repository.User,
 	sessionStore engine.Store,
+	emailSrv email.APP,
 ) service.APP {
 	return &User{
 		repo:         repo,
 		sessionStore: sessionStore,
+		emailSrv:     emailSrv,
 	}
 }
 

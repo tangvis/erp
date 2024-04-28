@@ -17,3 +17,11 @@ type EmailRepo struct {
 func (r EmailRepo) Save(ctx context.Context, record EmailRecordTab) error {
 	return r.db.WithContext(ctx).Save(&record).Error
 }
+
+func NewRepo(
+	db *mysql.DB,
+) Repo {
+	return &EmailRepo{
+		db: db,
+	}
+}

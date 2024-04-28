@@ -3,6 +3,8 @@ package impl
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/tangvis/erp/app/user/define"
 	"github.com/tangvis/erp/app/user/repository"
 	"github.com/tangvis/erp/app/user/service"
@@ -63,7 +65,7 @@ func (u User) CreateUser(ctx context.Context, user define.UserEntity) (define.Us
 	if err := u.checkInfoAvailable(ctx, user); err != nil {
 		return define.UserEntity{}, err
 	}
-	createdUser, err := u.repo.CreateUser(ctx, repository.UserTab{
+	createdUser, err := u.repo.SaveUser(ctx, repository.UserTab{
 		Username:    user.Username,
 		Passwd:      user.Passwd,
 		PhoneNumber: user.PhoneNumber,
@@ -88,8 +90,8 @@ func (u User) Login(ctx context.Context, req define.LoginRequest) (define.UserEn
 	return u.login(ctx, req.Email, req.Password, u.GetUserByEmail)
 }
 
-func (u User) login(ctx context.Context, info, passwd string, f func(ctx context.Context, email string) (repository.UserTab, error)) (define.UserEntity, error) {
-	user, err := f(ctx, info)
+func (u User) login(ctx context.Context, info, passwd string, getUser func(ctx context.Context, email string) (repository.UserTab, error)) (define.UserEntity, error) {
+	user, err := getUser(ctx, info)
 	if err != nil {
 		if errors.Is(err, common.ErrDBRecordNotFound) {
 			return define.UserEntity{}, common.ErrUserInfo
@@ -103,16 +105,20 @@ func (u User) login(ctx context.Context, info, passwd string, f func(ctx context
 	if err != nil {
 		return define.UserEntity{}, err
 	}
+	loginTime := time.Now()
 	resp := define.UserEntity{
 		ID:          user.ID,
 		Username:    user.Username,
 		PhoneNumber: user.PhoneNumber,
 		Email:       user.Email,
+		LoginTime:   loginTime.Unix(),
 	}
 	if len(onlineUsers) >= define.MaxOnlineForAUser {
 		return resp, common.ErrUserTooManyLogin
 	}
-	return resp, nil
+	user.LatestLoginTime = loginTime.Unix()
+	_, err = u.repo.SaveUser(ctx, user)
+	return resp, err
 }
 
 func (u User) OnlineUsers(ctx context.Context, id uint64) ([]define.UserEntity, error) {

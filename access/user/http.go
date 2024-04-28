@@ -65,6 +65,7 @@ func (c *Controller) Login(ctx engine.Context) (any, error) {
 			Username:    user.Username,
 			PhoneNumber: user.PhoneNumber,
 			Email:       user.Email,
+			LoginTime:   user.LoginTime,
 		}, nil
 	}
 	req.Password = crypto.GetMD5Hash(req.Password)

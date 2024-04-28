@@ -3,16 +3,17 @@ package repository
 import (
 	"context"
 	"errors"
+	"gorm.io/gorm"
+
 	"github.com/tangvis/erp/agent/mysql"
 	"github.com/tangvis/erp/app/user/define"
 	"github.com/tangvis/erp/common"
-	"gorm.io/gorm"
 )
 
 type User interface {
 	QueryUserByName(ctx context.Context, query define.UserQuery) ([]UserTab, error)
 	GetUserByID(ctx context.Context, id uint64) (UserTab, error)
-	CreateUser(ctx context.Context, user UserTab) (UserTab, error)
+	SaveUser(ctx context.Context, user UserTab) (UserTab, error)
 }
 
 type UserRepo struct {
@@ -64,8 +65,8 @@ func (u *UserRepo) QueryUserByName(ctx context.Context, query define.UserQuery) 
 	return users, nil
 }
 
-func (u *UserRepo) CreateUser(ctx context.Context, user UserTab) (UserTab, error) {
-	if err := u.db.WithContext(ctx).Create(&user).Error; err != nil {
+func (u *UserRepo) SaveUser(ctx context.Context, user UserTab) (UserTab, error) {
+	if err := u.db.WithContext(ctx).Save(&user).Error; err != nil {
 		return UserTab{}, err
 	}
 	return user, nil

@@ -12,9 +12,10 @@ func (q *UserTab) TableName() string {
 type UserTab struct {
 	mysql.BaseModel
 
-	Username    string
-	Passwd      string
-	PhoneNumber string
-	Email       string
-	UserStatus  define.UserStatus
+	Username        string
+	Passwd          string
+	PhoneNumber     string
+	Email           string
+	UserStatus      define.UserStatus
+	LatestLoginTime int64
 }

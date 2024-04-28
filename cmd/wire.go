@@ -5,8 +5,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/tangvis/erp/middleware"
 	"net/http"
+
+	"github.com/tangvis/erp/agent/email"
+	"github.com/tangvis/erp/agent/templates"
+	"github.com/tangvis/erp/app/system"
+	"github.com/tangvis/erp/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -46,6 +50,9 @@ func initializeApplication(
 		apirate.ServiceSet,
 		userAPP.ServiceSet,
 		access.HTTPSet,
+		templates.NewDefaultTemplate,
+		email.NewDefaultClient,
+		system.Set,
 		wire.FieldsOf(
 			new(*dependence),
 			"DB",

@@ -1,8 +1,71 @@
 package meta
 
+import (
+	"context"
+
+	"github.com/tangvis/erp/agent/mysql"
+)
+
 type RepoImpl struct {
+	db *mysql.DB
 }
 
-func NewRepoImpl() Repo {
-	return &RepoImpl{}
+func Create[T any](ctx context.Context, r *RepoImpl, entity T) (T, error) {
+	if err := r.db.WithContext(ctx).Create(&entity).Error; err != nil {
+		var zero T
+		return zero, err // Return zero value of T if error
+	}
+	return entity, nil
+}
+
+func (r RepoImpl) CreateSpu(ctx context.Context, spu SpuTab) (SpuTab, error) {
+	return Create(ctx, &r, spu)
+}
+
+// CreateBrand inserts a new brand into the database
+func (r RepoImpl) CreateBrand(ctx context.Context, brand BrandTab) (BrandTab, error) {
+	return Create(ctx, &r, brand)
+}
+
+// CreateCategory inserts a new category into the database
+func (r RepoImpl) CreateCategory(ctx context.Context, category CategoryTab) (CategoryTab, error) {
+	return Create(ctx, &r, category)
+}
+
+// CreateSku inserts a new Sku into the database
+func (r RepoImpl) CreateSku(ctx context.Context, sku SkuTab) (SkuTab, error) {
+	return Create(ctx, &r, sku)
+}
+
+// CreateUnit inserts a new Unit into the database
+func (r RepoImpl) CreateUnit(ctx context.Context, unit UnitTab) (UnitTab, error) {
+	return Create(ctx, &r, unit)
+}
+
+// CreateSkuAttr inserts a new SkuAttr into the database
+func (r RepoImpl) CreateSkuAttr(ctx context.Context, skuAttr SkuAttrTab) (SkuAttrTab, error) {
+	return Create(ctx, &r, skuAttr)
+}
+
+// CreateAttributeKey inserts a new AttributeKey into the database
+func (r RepoImpl) CreateAttributeKey(ctx context.Context, attributeKey AttributeKeyTab) (AttributeKeyTab, error) {
+	return Create(ctx, &r, attributeKey)
+}
+
+// CreateAttributeValue inserts a new AttributeValue into the database
+func (r RepoImpl) CreateAttributeValue(ctx context.Context, attributeValue AttributeValueTab) (AttributeValueTab, error) {
+	return Create(ctx, &r, attributeValue)
+}
+
+// CreateURL inserts a new URL into the database
+func (r RepoImpl) CreateURL(ctx context.Context, url URLTab) (URLTab, error) {
+	return Create(ctx, &r, url)
+}
+
+func NewRepoImpl(
+	db *mysql.DB,
+) Repo {
+	return &RepoImpl{
+		db: db,
+	}
 }

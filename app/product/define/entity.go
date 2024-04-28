@@ -35,19 +35,19 @@ type Unit struct {
 }
 
 type CateBrief struct {
-	ID   uint64
-	Name string
-	Desc string
-	URL  string
+	ID   uint64 `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Desc string `json:"desc,omitempty"`
+	URL  string `json:"url,omitempty"`
 }
 
 type Category struct {
 	CateBrief
-	PID        uint64
-	Path       string
-	CateStatus Status
-	Ctime      int64
-	Mtime      int64
+	PID        uint64 `json:"pid,omitempty"`
+	Path       string `json:"path,omitempty"`
+	CateStatus Status `json:"cate_status,omitempty"`
+	Ctime      int64  `json:"ctime,omitempty"`
+	Mtime      int64  `json:"mtime,omitempty"`
 }
 
 type Spu struct {
@@ -83,8 +83,8 @@ type Sku struct {
 }
 
 type Attributes struct {
-	KeyID   int64
-	Key     string
-	ValueID int64
-	Value   string
+	KeyID   int64  `json:"key_id,omitempty"`
+	Key     string `json:"key,omitempty"`
+	ValueID int64  `json:"value_id,omitempty"`
+	Value   string `json:"value,omitempty"`
 }

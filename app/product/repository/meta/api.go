@@ -10,7 +10,9 @@ type Repo interface {
 	CreateUnit(ctx context.Context, unit UnitTab) (UnitTab, error)
 	CreateURL(ctx context.Context, url URLTab) (URLTab, error)
 
-	GetCategoryByID(ctx context.Context, id ...uint64) ([]CategoryTab, error)
-	GetCategoryByName(ctx context.Context, name ...string) ([]CategoryTab, error)
+	GetCategoryByID(ctx context.Context, userEmail string, id ...uint64) ([]CategoryTab, error)
+	GetCategoryByPID(ctx context.Context, userEmail string, pid ...uint64) ([]CategoryTab, error)
+	GetCategoryByName(ctx context.Context, userEmail string, name ...string) ([]CategoryTab, error)
 	GetCategoriesByUser(ctx context.Context, userEmail string) ([]CategoryTab, error)
+	DeleteByIDs(ctx context.Context, userEmail string, id ...uint64) error
 }

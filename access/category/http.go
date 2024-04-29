@@ -27,9 +27,9 @@ func NewController(
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
 		engine.NewRouter(http.MethodPost, "/category/add", c.engine.JSONAuth(c.Add)),
-		engine.NewRouter(http.MethodPost, "/category/update", c.engine.JSONAuth(c.List)),
-		engine.NewRouter(http.MethodGet, "/category/list", c.engine.JSONAuth(c.Update)),
-		//engine.NewRouter(http.MethodPost, "/category/delete", c.engine.JSON(c.OnlineUsers)),
+		engine.NewRouter(http.MethodPost, "/category/update", c.engine.JSONAuth(c.Update)),
+		engine.NewRouter(http.MethodGet, "/category/list", c.engine.JSONAuth(c.List)),
+		engine.NewRouter(http.MethodPost, "/category/delete", c.engine.JSONAuth(c.Remove)),
 	}
 }
 
@@ -51,4 +51,12 @@ func (c *Controller) Update(ctx engine.Context, userInfo *common.UserInfo) (any,
 		return nil, err
 	}
 	return c.app.Update(ctx.GetCtx(), userInfo, &req)
+}
+
+func (c *Controller) Remove(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
+	var req define.RemoveRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return nil, c.app.Remove(ctx.GetCtx(), userInfo, req.IDs...)
 }

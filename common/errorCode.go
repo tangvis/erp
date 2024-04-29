@@ -26,4 +26,5 @@ var (
 	ErrCategoryParentNotExists = ErrCategory.New("parent category not exists")
 	ErrCategoryNotExists       = ErrCategory.New("category not exists")
 	ErrCategoryNameConflict    = ErrCategory.New("name conflict")
+	ErrCategoryHasChildren     = ErrCategory.New("current category has children, can't remove it")
 )

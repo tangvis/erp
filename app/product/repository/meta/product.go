@@ -66,15 +66,29 @@ func (r RepoImpl) CreateAttributeValue(ctx context.Context, attributeValue Attri
 	return Save(ctx, &r, attributeValue)
 }
 
-func (r RepoImpl) GetCategoryByID(ctx context.Context, id ...uint64) ([]CategoryTab, error) {
+func (r RepoImpl) GetCategoryByID(ctx context.Context, userEmail string, id ...uint64) ([]CategoryTab, error) {
 	ret := make([]CategoryTab, 0)
-	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("id in (?)", id).Find(&ret).Error
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and id in (?)", userEmail, id).Find(&ret).Error
 	return ret, err
 }
 
-func (r RepoImpl) GetCategoryByName(ctx context.Context, name ...string) ([]CategoryTab, error) {
+func (r RepoImpl) GetCategoryByPID(ctx context.Context, userEmail string, pid ...uint64) ([]CategoryTab, error) {
 	ret := make([]CategoryTab, 0)
-	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("name in (?)", name).Find(&ret).Error
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and pid in (?)", userEmail, pid).Find(&ret).Error
+	return ret, err
+}
+
+func (r RepoImpl) DeleteByIDs(ctx context.Context, userEmail string, id ...uint64) error {
+	if err := r.db.WithContext(ctx).Where("create_by = ? and id in (?)", userEmail, id).Delete(&CategoryTab{}).Error; err != nil {
+		return err
+	}
+	_, err := r.getAndCacheCategory(ctx, userEmail)
+	return err
+}
+
+func (r RepoImpl) GetCategoryByName(ctx context.Context, userEmail string, name ...string) ([]CategoryTab, error) {
+	ret := make([]CategoryTab, 0)
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and name in (?)", userEmail, name).Find(&ret).Error
 	return ret, err
 }
 
@@ -112,8 +126,10 @@ func (r RepoImpl) CreateURL(ctx context.Context, url URLTab) (URLTab, error) {
 
 func NewRepoImpl(
 	db *mysql.DB,
+	cache redis.Cache,
 ) Repo {
 	return &RepoImpl{
-		db: db,
+		db:    db,
+		cache: cache,
 	}
 }

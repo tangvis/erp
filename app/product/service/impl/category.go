@@ -23,10 +23,11 @@ func (c CategoryImpl) List(ctx context.Context, user *common.UserInfo) ([]*defin
 }
 
 func (c CategoryImpl) Add(ctx context.Context, user *common.UserInfo, req *define.AddCateRequest) (*define.Category, error) {
-	if err := c.CheckBeforeAdd(ctx, req); err != nil {
+	if err := c.CheckBeforeAdd(ctx, user, req); err != nil {
 		return nil, err
 	}
 	category, err := c.repo.SaveCategory(ctx, meta.CategoryTab{
+		PID:      req.PID,
 		Name:     req.Name,
 		Desc:     req.Desc,
 		URL:      req.URL,
@@ -38,15 +39,35 @@ func (c CategoryImpl) Add(ctx context.Context, user *common.UserInfo, req *defin
 	return converter.CategoryConvert(category), nil
 }
 
-func (c CategoryImpl) CheckBeforeAdd(ctx context.Context, req *define.AddCateRequest) error {
-	parent, err := c.repo.GetCategoryByID(ctx, req.PID)
+func (c CategoryImpl) CheckBeforeAdd(ctx context.Context, user *common.UserInfo, req *define.AddCateRequest) error {
+	if req.PID != 0 {
+		parent, err := c.repo.GetCategoryByID(ctx, user.Email, req.PID)
+		if err != nil {
+			return err
+		}
+		if len(parent) == 0 {
+			return common.ErrCategoryParentNotExists
+		}
+	}
+	return c.CheckCategoryName(ctx, req.Name, 0)
+}
+
+func (c CategoryImpl) Remove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
+	if err := c.CheckBeforeRemove(ctx, user, id...); err != nil {
+		return err
+	}
+	return c.repo.DeleteByIDs(ctx, user.Email, id...)
+}
+
+func (c CategoryImpl) CheckBeforeRemove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
+	categories, err := c.repo.GetCategoryByPID(ctx, user.Email, id...)
 	if err != nil {
 		return err
 	}
-	if len(parent) == 0 {
-		return common.ErrCategoryParentNotExists
+	if len(categories) > 0 {
+		return common.ErrCategoryHasChildren
 	}
-	return c.CheckCategoryName(ctx, req.Name, 0)
+	return nil
 }
 
 func (c CategoryImpl) Update(ctx context.Context, user *common.UserInfo, req *define.UpdateCateRequest) (*define.Category, error) {
@@ -65,13 +86,15 @@ func (c CategoryImpl) Update(ctx context.Context, user *common.UserInfo, req *de
 }
 
 func (c CategoryImpl) CheckBeforeUpdate(ctx context.Context, user *common.UserInfo, req *define.UpdateCateRequest) (meta.CategoryTab, error) {
-	categories, err := c.GetCategoryMap(ctx, req.PID, req.ID)
+	categories, err := c.GetCategoryMap(ctx, user, req.PID, req.ID)
 	if err != nil {
 		return meta.CategoryTab{}, err
 	}
-	_, ok := categories[req.PID]
-	if !ok {
-		return meta.CategoryTab{}, common.ErrCategoryParentNotExists
+	if req.PID > 0 {
+		_, ok := categories[req.PID]
+		if !ok {
+			return meta.CategoryTab{}, common.ErrCategoryParentNotExists
+		}
 	}
 	cate, ok := categories[req.ID]
 	if !ok {
@@ -95,8 +118,8 @@ func (c CategoryImpl) CheckCategoryName(ctx context.Context, name string, id uin
 	return nil
 }
 
-func (c CategoryImpl) GetCategoryMap(ctx context.Context, id ...uint64) (map[uint64]meta.CategoryTab, error) {
-	categories, err := c.repo.GetCategoryByID(ctx, id...)
+func (c CategoryImpl) GetCategoryMap(ctx context.Context, user *common.UserInfo, id ...uint64) (map[uint64]meta.CategoryTab, error) {
+	categories, err := c.repo.GetCategoryByID(ctx, user.Email, id...)
 	if err != nil {
 		return nil, err
 	}

@@ -38,6 +38,7 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	return []engine.Controller{
 		app.pingController,
 		app.userController,
+		app.categoryController,
 	}
 }
 

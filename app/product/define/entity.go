@@ -94,10 +94,14 @@ type AddCateRequest struct {
 	Name string `json:"name,omitempty" binding:"required"`
 	Desc string `json:"desc,omitempty"`
 	URL  string `json:"url,omitempty"`
-	PID  uint64 `json:"pid,omitempty" binding:"required"`
+	PID  uint64 `json:"pid,omitempty"`
 }
 
 type UpdateCateRequest struct {
 	ID uint64 `json:"id,omitempty" binding:"required"`
 	AddCateRequest
+}
+
+type RemoveRequest struct {
+	IDs []uint64 `json:"ids" binding:"required"`
 }

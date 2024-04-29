@@ -21,4 +21,9 @@ var (
 	ErrDB               = ecode.NewSystemErrorCode(ecode.SystemDB, 10)
 	ErrDBConf           = ecode.NewErrorConf(ErrDB)
 	ErrDBRecordNotFound = ErrDBConf.New("record not found")
+
+	ErrCategory                = ecode.NewErrorConf(ecode.NewBusinessErrorCode(ecode.BusinessCategory, 1))
+	ErrCategoryParentNotExists = ErrCategory.New("parent category not exists")
+	ErrCategoryNotExists       = ErrCategory.New("category not exists")
+	ErrCategoryNameConflict    = ErrCategory.New("name conflict")
 )

@@ -36,18 +36,19 @@ type Unit struct {
 
 type CateBrief struct {
 	ID   uint64 `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"  binding:"required"`
 	Desc string `json:"desc,omitempty"`
 	URL  string `json:"url,omitempty"`
+	PID  uint64 `json:"pid,omitempty" binding:"required"`
 }
 
 type Category struct {
 	CateBrief
-	PID        uint64 `json:"pid,omitempty"`
-	Path       string `json:"path,omitempty"`
-	CateStatus Status `json:"cate_status,omitempty"`
-	Ctime      int64  `json:"ctime,omitempty"`
-	Mtime      int64  `json:"mtime,omitempty"`
+	Path       string      `json:"path,omitempty"`
+	CateStatus Status      `json:"cate_status,omitempty"`
+	Ctime      int64       `json:"ctime,omitempty"`
+	Mtime      int64       `json:"mtime,omitempty"`
+	Children   []*Category `json:"children,omitempty"`
 }
 
 type Spu struct {
@@ -87,4 +88,16 @@ type Attributes struct {
 	Key     string `json:"key,omitempty"`
 	ValueID int64  `json:"value_id,omitempty"`
 	Value   string `json:"value,omitempty"`
+}
+
+type AddCateRequest struct {
+	Name string `json:"name,omitempty" binding:"required"`
+	Desc string `json:"desc,omitempty"`
+	URL  string `json:"url,omitempty"`
+	PID  uint64 `json:"pid,omitempty" binding:"required"`
+}
+
+type UpdateCateRequest struct {
+	ID uint64 `json:"id,omitempty" binding:"required"`
+	AddCateRequest
 }

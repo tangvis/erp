@@ -23,6 +23,7 @@ type CategoryTab struct {
 	URL        string // URLTab
 	Path       string // {pid} -> {child_id} -> ...
 	CateStatus define.Status
+	CreateBy   string // email of creator
 
 	mysql.BaseModel
 }

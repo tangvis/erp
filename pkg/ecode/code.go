@@ -23,8 +23,9 @@ const (
 )
 
 const (
-	BusinessSku   Business = 1
-	BusinessOrder Business = 1
+	BusinessSku      Business = 1
+	BusinessOrder    Business = 2
+	BusinessCategory Business = 3
 )
 
 func NewBusinessErrorCode(business Business, subCode SubCode) int {

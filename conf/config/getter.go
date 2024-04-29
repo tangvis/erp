@@ -100,7 +100,7 @@ func (c configGetter) GetMySQLConfig() (mysql.Config, error) {
 }
 
 func (c configGetter) GetEnableResponseTraceID() bool {
-	return c.viper.GetBool("middleware.response_trace_id")
+	return c.viper.GetBool("middleware.responseTraceID")
 }
 
 func (c configGetter) GetMiddleWareConfig() (MiddlewareConfig, error) {
@@ -112,5 +112,5 @@ func (c configGetter) GetMiddleWareConfig() (MiddlewareConfig, error) {
 }
 
 func (c configGetter) GetEnableLogRequest() bool {
-	return c.viper.GetBool("middleware.log_request")
+	return c.viper.GetBool("middleware.logRequest")
 }

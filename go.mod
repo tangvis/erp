@@ -6,7 +6,7 @@ require (
 	github.com/gin-contrib/sessions v1.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.19.0
-	github.com/go-resty/resty/v2 v2.11.0
+	github.com/go-resty/resty/v2 v2.12.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0
@@ -15,7 +15,7 @@ require (
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/redis/go-redis/v9 v9.5.1
-	github.com/shopspring/decimal v1.3.1
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	github.com/xuri/excelize/v2 v2.8.1

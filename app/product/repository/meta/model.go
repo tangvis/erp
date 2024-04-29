@@ -17,14 +17,19 @@ type BrandTab struct {
 }
 
 type CategoryTab struct {
-	PID        uint64
+	PID        uint64 `gorm:"column:pid"`
 	Name       string
 	Desc       string
 	URL        string // URLTab
 	Path       string // {pid} -> {child_id} -> ...
 	CateStatus define.Status
+	CreateBy   string // email of creator
 
 	mysql.BaseModel
+}
+
+func (tab *CategoryTab) TableName() string {
+	return "category_tab"
 }
 
 type SpuTab struct {

@@ -10,7 +10,7 @@ import (
 
 type Controller struct {
 	engine engine.HTTPEngine
-	biz    service.APP
+	app    service.APP
 }
 
 func NewController(
@@ -19,7 +19,7 @@ func NewController(
 ) *Controller {
 	return &Controller{
 		engine: engine,
-		biz:    app,
+		app:    app,
 	}
 }
 
@@ -31,7 +31,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 }
 
 func (c *Controller) Ping(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
-	return c.biz.Ping(), nil
+	return c.app.Ping(), nil
 }
 
 func (c *Controller) Error(ctx engine.Context) (any, error) {
@@ -39,7 +39,7 @@ func (c *Controller) Error(ctx engine.Context) (any, error) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		return nil, err
 	}
-	return c.biz.PingFail(ctx.GetCtx())
+	return c.app.PingFail(ctx.GetCtx())
 }
 
 type FailPingRequest struct {

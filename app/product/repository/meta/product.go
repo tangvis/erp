@@ -4,14 +4,17 @@ import (
 	"context"
 
 	"github.com/tangvis/erp/agent/mysql"
+	"github.com/tangvis/erp/agent/redis"
+	"github.com/tangvis/erp/common"
 )
 
 type RepoImpl struct {
-	db *mysql.DB
+	db    *mysql.DB
+	cache redis.Cache
 }
 
-func Create[T any](ctx context.Context, r *RepoImpl, entity T) (T, error) {
-	if err := r.db.WithContext(ctx).Create(&entity).Error; err != nil {
+func Save[T any](ctx context.Context, r *RepoImpl, entity T) (T, error) {
+	if err := r.db.WithContext(ctx).Save(&entity).Error; err != nil {
 		var zero T
 		return zero, err // Return zero value of T if error
 	}
@@ -19,53 +22,114 @@ func Create[T any](ctx context.Context, r *RepoImpl, entity T) (T, error) {
 }
 
 func (r RepoImpl) CreateSpu(ctx context.Context, spu SpuTab) (SpuTab, error) {
-	return Create(ctx, &r, spu)
+	return Save(ctx, &r, spu)
 }
 
 // CreateBrand inserts a new brand into the database
 func (r RepoImpl) CreateBrand(ctx context.Context, brand BrandTab) (BrandTab, error) {
-	return Create(ctx, &r, brand)
+	return Save(ctx, &r, brand)
 }
 
-// CreateCategory inserts a new category into the database
-func (r RepoImpl) CreateCategory(ctx context.Context, category CategoryTab) (CategoryTab, error) {
-	return Create(ctx, &r, category)
+func (r RepoImpl) SaveCategory(ctx context.Context, category CategoryTab) (CategoryTab, error) {
+	data, err := Save(ctx, &r, category)
+	if err != nil {
+		return data, err
+	}
+	// refresh cache
+	_, err = r.getAndCacheCategory(ctx, category.CreateBy)
+
+	return data, err
 }
 
 // CreateSku inserts a new Sku into the database
 func (r RepoImpl) CreateSku(ctx context.Context, sku SkuTab) (SkuTab, error) {
-	return Create(ctx, &r, sku)
+	return Save(ctx, &r, sku)
 }
 
 // CreateUnit inserts a new Unit into the database
 func (r RepoImpl) CreateUnit(ctx context.Context, unit UnitTab) (UnitTab, error) {
-	return Create(ctx, &r, unit)
+	return Save(ctx, &r, unit)
 }
 
 // CreateSkuAttr inserts a new SkuAttr into the database
 func (r RepoImpl) CreateSkuAttr(ctx context.Context, skuAttr SkuAttrTab) (SkuAttrTab, error) {
-	return Create(ctx, &r, skuAttr)
+	return Save(ctx, &r, skuAttr)
 }
 
 // CreateAttributeKey inserts a new AttributeKey into the database
 func (r RepoImpl) CreateAttributeKey(ctx context.Context, attributeKey AttributeKeyTab) (AttributeKeyTab, error) {
-	return Create(ctx, &r, attributeKey)
+	return Save(ctx, &r, attributeKey)
 }
 
 // CreateAttributeValue inserts a new AttributeValue into the database
 func (r RepoImpl) CreateAttributeValue(ctx context.Context, attributeValue AttributeValueTab) (AttributeValueTab, error) {
-	return Create(ctx, &r, attributeValue)
+	return Save(ctx, &r, attributeValue)
+}
+
+func (r RepoImpl) GetCategoryByID(ctx context.Context, userEmail string, id ...uint64) ([]CategoryTab, error) {
+	ret := make([]CategoryTab, 0)
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and id in (?)", userEmail, id).Find(&ret).Error
+	return ret, err
+}
+
+func (r RepoImpl) GetCategoryByPID(ctx context.Context, userEmail string, pid ...uint64) ([]CategoryTab, error) {
+	ret := make([]CategoryTab, 0)
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and pid in (?)", userEmail, pid).Find(&ret).Error
+	return ret, err
+}
+
+func (r RepoImpl) DeleteByIDs(ctx context.Context, userEmail string, id ...uint64) error {
+	if err := r.db.WithContext(ctx).Where("create_by = ? and id in (?)", userEmail, id).Delete(&CategoryTab{}).Error; err != nil {
+		return err
+	}
+	_, err := r.getAndCacheCategory(ctx, userEmail)
+	return err
+}
+
+func (r RepoImpl) GetCategoryByName(ctx context.Context, userEmail string, name ...string) ([]CategoryTab, error) {
+	ret := make([]CategoryTab, 0)
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ? and name in (?)", userEmail, name).Find(&ret).Error
+	return ret, err
+}
+
+func (r RepoImpl) GetCategoriesByUser(ctx context.Context, userEmail string) ([]CategoryTab, error) {
+	var (
+		data     = make([]CategoryTab, 0)
+		cacheKey = common.CategoryKey(userEmail)
+	)
+
+	if err := r.cache.GetExUnmarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry); err != nil {
+		return nil, err
+	}
+	if len(data) > 0 {
+		return data, nil
+	}
+	return r.getAndCacheCategory(ctx, userEmail)
+}
+
+func (r RepoImpl) getAndCacheCategory(ctx context.Context, userEmail string) ([]CategoryTab, error) {
+	var (
+		data     = make([]CategoryTab, 0)
+		cacheKey = common.CategoryKey(userEmail)
+	)
+	err := r.db.WithContext(ctx).Model(&CategoryTab{}).Where("create_by = ?", userEmail).Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return data, r.cache.SetExMarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry)
 }
 
 // CreateURL inserts a new URL into the database
 func (r RepoImpl) CreateURL(ctx context.Context, url URLTab) (URLTab, error) {
-	return Create(ctx, &r, url)
+	return Save(ctx, &r, url)
 }
 
 func NewRepoImpl(
 	db *mysql.DB,
+	cache redis.Cache,
 ) Repo {
 	return &RepoImpl{
-		db: db,
+		db:    db,
+		cache: cache,
 	}
 }

@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/tangvis/erp/access/category"
 	"github.com/tangvis/erp/agent/email"
 	"github.com/tangvis/erp/agent/templates"
+	"github.com/tangvis/erp/app"
 	"github.com/tangvis/erp/app/system"
 	"github.com/tangvis/erp/middleware"
 
@@ -18,17 +20,15 @@ import (
 	"github.com/tangvis/erp/access"
 	pingHTTP "github.com/tangvis/erp/access/ping"
 	userHTTP "github.com/tangvis/erp/access/user"
-	"github.com/tangvis/erp/app/apirate"
 	"github.com/tangvis/erp/app/apirate/service"
-	"github.com/tangvis/erp/app/ping"
-	userAPP "github.com/tangvis/erp/app/user"
 	getter "github.com/tangvis/erp/conf/config"
 	"github.com/tangvis/erp/middleware/engine"
 )
 
 type application struct {
-	pingController *pingHTTP.Controller
-	userController *userHTTP.Controller
+	pingController     *pingHTTP.Controller
+	userController     *userHTTP.Controller
+	categoryController *category.Controller
 
 	rateLimiterAPP service.APP
 	sessionStore   engine.Store
@@ -38,6 +38,7 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	return []engine.Controller{
 		app.pingController,
 		app.userController,
+		app.categoryController,
 	}
 }
 
@@ -45,11 +46,9 @@ func initializeApplication(
 	dep *dependence,
 ) (*application, error) {
 	wire.Build(
-		ping.ServiceSet,
 		middleware.Set,
-		apirate.ServiceSet,
-		userAPP.ServiceSet,
 		access.HTTPSet,
+		app.ServiceSet,
 		templates.NewDefaultTemplate,
 		email.NewDefaultClient,
 		system.Set,

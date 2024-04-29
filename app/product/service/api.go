@@ -13,3 +13,6 @@ type Category interface {
 	Update(ctx context.Context, user *common.UserInfo, req *define.UpdateCateRequest) (*define.Category, error)
 	Remove(ctx context.Context, user *common.UserInfo, id ...uint64) error
 }
+
+type Brand interface {
+}

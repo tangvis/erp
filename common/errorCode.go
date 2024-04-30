@@ -29,4 +29,5 @@ var (
 	ErrCategoryHasChildren     = ErrCategory.New("current category has children, can't remove it")
 	ErrBrand                   = ecode.NewErrorConf(ecode.NewBusinessErrorCode(ecode.BusinessBrand, 1))
 	ErrBrandNameConflict       = ErrCategory.New("name conflict")
+	ErrBrandNotExists          = ErrCategory.New("brand not exists")
 )

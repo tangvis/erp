@@ -69,3 +69,11 @@ func BrandConvert(brand meta.BrandTab) *define.Brand {
 		Mtime:    brand.Mtime,
 	}
 }
+
+func BrandsConvert(brands []meta.BrandTab) []*define.Brand {
+	ret := make([]*define.Brand, len(brands))
+	for i, brand := range brands {
+		ret[i] = BrandConvert(brand)
+	}
+	return ret
+}

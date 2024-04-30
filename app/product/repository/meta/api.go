@@ -4,7 +4,6 @@ import "context"
 
 type Repo interface {
 	CreateSpu(ctx context.Context, spu SpuTab) (SpuTab, error)
-	CreateBrand(ctx context.Context, brand BrandTab) (BrandTab, error)
 	SaveCategory(ctx context.Context, category CategoryTab) (CategoryTab, error)
 	CreateSku(ctx context.Context, sku SkuTab) (SkuTab, error)
 	CreateUnit(ctx context.Context, unit UnitTab) (UnitTab, error)
@@ -14,5 +13,11 @@ type Repo interface {
 	GetCategoryByPID(ctx context.Context, userEmail string, pid ...uint64) ([]CategoryTab, error)
 	GetCategoryByName(ctx context.Context, userEmail string, name ...string) ([]CategoryTab, error)
 	GetCategoriesByUser(ctx context.Context, userEmail string) ([]CategoryTab, error)
-	DeleteByIDs(ctx context.Context, userEmail string, id ...uint64) error
+	DeleteCategoryByIDs(ctx context.Context, userEmail string, id ...uint64) error
+
+	GetBrandByID(ctx context.Context, userEmail string, id ...uint64) ([]BrandTab, error)
+	GetBrandByName(ctx context.Context, userEmail string, brandName ...string) ([]BrandTab, error)
+	GetBrandsByUser(ctx context.Context, userEmail string) ([]BrandTab, error)
+	SaveBrand(ctx context.Context, brand BrandTab) (BrandTab, error)
+	DeleteBrandsByIDs(ctx context.Context, userEmail string, id ...uint64) error
 }

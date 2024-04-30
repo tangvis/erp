@@ -4,6 +4,7 @@ import "time"
 
 const (
 	Category = "category:"
+	Brand    = "brand:"
 )
 
 type CacheKey struct {
@@ -14,6 +15,13 @@ type CacheKey struct {
 func CategoryKey(email string) CacheKey {
 	return CacheKey{
 		Key:    Category + email,
+		Expiry: 30 * time.Minute,
+	}
+}
+
+func BrandKey(email string) CacheKey {
+	return CacheKey{
+		Key:    Brand + email,
 		Expiry: 30 * time.Minute,
 	}
 }

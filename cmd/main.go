@@ -17,5 +17,5 @@ func main() {
 	if err = app.registerHTTP(ginEngine, dep); err != nil {
 		panic(err)
 	}
-	_ = ginEngine.Run("127.0.0.1:8080")
+	_ = ginEngine.Run("0.0.0.0:8080")
 }

@@ -105,3 +105,18 @@ type UpdateCateRequest struct {
 type RemoveRequest struct {
 	IDs []uint64 `json:"ids" binding:"required"`
 }
+
+type AddBrandRequest struct {
+	Name string `json:"name,omitempty" binding:"required"`
+	Desc string `json:"desc,omitempty"`
+	URL  string `json:"url,omitempty"`
+}
+
+type UpdateBrandRequest struct {
+	ID uint64 `json:"id,omitempty" binding:"required"`
+	AddBrandRequest
+}
+
+type RemoveBrandRequest struct {
+	IDs []uint64 `json:"ids" binding:"required"`
+}

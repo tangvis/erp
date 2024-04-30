@@ -54,3 +54,18 @@ func CategoryConvert(cate meta.CategoryTab) *define.Category {
 		Mtime:      cate.Mtime,
 	}
 }
+
+func BrandConvert(brand meta.BrandTab) *define.Brand {
+	return &define.Brand{
+		BrandBrief: define.BrandBrief{
+			ID:          brand.ID,
+			Name:        brand.Name,
+			Desc:        brand.Desc,
+			URL:         brand.URL,
+			BrandStatus: brand.BrandStatus,
+		},
+		CreateBy: brand.CreateBy,
+		Ctime:    brand.Ctime,
+		Mtime:    brand.Mtime,
+	}
+}

@@ -120,8 +120,10 @@ func (u User) login(ctx context.Context, info, passwd string, getUser func(ctx c
 	if len(onlineUsers) >= define.MaxOnlineForAUser {
 		return resp, common.ErrUserTooManyLogin
 	}
-	user.LatestLoginTime = loginTime.Unix()
-	_, err = u.repo.SaveUser(ctx, user)
+	go func() {
+		user.LatestLoginTime = loginTime.Unix()
+		_, err = u.repo.SaveUser(ctx, user)
+	}()
 	return resp, err
 }
 

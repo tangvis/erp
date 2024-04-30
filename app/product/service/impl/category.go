@@ -56,7 +56,7 @@ func (c CategoryImpl) Remove(ctx context.Context, user *common.UserInfo, id ...u
 	if err := c.CheckBeforeRemove(ctx, user, id...); err != nil {
 		return err
 	}
-	return c.repo.DeleteByIDs(ctx, user.Email, id...)
+	return c.repo.DeleteCategoryByIDs(ctx, user.Email, id...)
 }
 
 func (c CategoryImpl) CheckBeforeRemove(ctx context.Context, user *common.UserInfo, id ...uint64) error {

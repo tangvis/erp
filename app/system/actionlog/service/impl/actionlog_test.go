@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// Define a mock status type to match the define.Status in your real struct
+// Define a mock status type to match define.Status in your real struct
 type MockStatus int
 
 const (

@@ -6,6 +6,8 @@ import (
 	"github.com/tangvis/erp/app/system/actionlog/define"
 	"github.com/tangvis/erp/app/system/actionlog/repository"
 	"github.com/tangvis/erp/app/system/actionlog/service"
+	ctxUtil "github.com/tangvis/erp/pkg/context"
+	logutil "github.com/tangvis/erp/pkg/log"
 	"reflect"
 	"strings"
 )
@@ -14,9 +16,25 @@ type ServiceActionLog struct {
 	repo repository.Repo
 }
 
+func (s ServiceActionLog) AsyncCreate(ctx context.Context,
+	operator string,
+	moduleID define.Module,
+	bizID uint64,
+	action define.Action,
+	before, after any,
+) {
+	go func() {
+		neCtx := ctxUtil.ForkContext(ctx)
+		if err := s.Create(neCtx, operator, moduleID, bizID, action, before, after); err != nil {
+			logutil.CtxError(neCtx, err.Error())
+		}
+	}()
+}
+
 func (s ServiceActionLog) Create(ctx context.Context,
 	operator string,
-	moduleID, bizID uint64,
+	moduleID define.Module,
+	bizID uint64,
 	action define.Action,
 	before, after any,
 ) error {
@@ -45,7 +63,7 @@ func (s ServiceActionLog) Create(ctx context.Context,
 
 func NewActionLogAPP(
 	repo repository.Repo,
-) service.APPActionLog {
+) service.APP {
 	return &ServiceActionLog{
 		repo: repo,
 	}

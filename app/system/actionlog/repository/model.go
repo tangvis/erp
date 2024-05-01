@@ -7,7 +7,7 @@ import (
 
 type ActionLogTab struct {
 	ID         uint64
-	ModuleID   uint64
+	ModuleID   define.Module
 	BizID      uint64
 	ActionType define.Action
 	Operator   string

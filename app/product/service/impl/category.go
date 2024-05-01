@@ -2,16 +2,18 @@ package impl
 
 import (
 	"context"
-
 	"github.com/tangvis/erp/app/product/converter"
 	"github.com/tangvis/erp/app/product/define"
 	"github.com/tangvis/erp/app/product/repository/meta"
 	"github.com/tangvis/erp/app/product/service"
+	actionLogDefine "github.com/tangvis/erp/app/system/actionlog/define"
+	actionLog "github.com/tangvis/erp/app/system/actionlog/service"
 	"github.com/tangvis/erp/common"
 )
 
 type CategoryImpl struct {
-	repo meta.Repo
+	repo      meta.Repo
+	actionLog actionLog.APP
 }
 
 func (c CategoryImpl) List(ctx context.Context, user *common.UserInfo) ([]*define.Category, error) {
@@ -36,6 +38,7 @@ func (c CategoryImpl) Add(ctx context.Context, user *common.UserInfo, req *defin
 	if err != nil {
 		return nil, err
 	}
+	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.Add, nil, nil)
 	return converter.CategoryConvert(category), nil
 }
 
@@ -133,8 +136,10 @@ func (c CategoryImpl) GetCategoryMap(ctx context.Context, user *common.UserInfo,
 
 func NewCategoryImpl(
 	repo meta.Repo,
+	actionLog actionLog.APP,
 ) service.Category {
 	return &CategoryImpl{
-		repo: repo,
+		repo:      repo,
+		actionLog: actionLog,
 	}
 }

@@ -15,6 +15,10 @@ func AutoWrapContext(ctx context.Context, traceID string) context.Context {
 	return context.WithValue(ctx, TraceIDKey, traceID)
 }
 
+func ForkContext(ctx context.Context) context.Context {
+	return AutoWrapContext(context.Background(), GetTranceID(ctx))
+}
+
 func GenerateTrace() string {
 	return uuid.NewString()
 }

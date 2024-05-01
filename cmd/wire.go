@@ -5,30 +5,29 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
-	"github.com/tangvis/erp/access/category"
+	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
+	"github.com/tangvis/erp/access"
+	pingHTTP "github.com/tangvis/erp/access/ping"
+	"github.com/tangvis/erp/access/product"
+	systemHTTP "github.com/tangvis/erp/access/system"
+	userHTTP "github.com/tangvis/erp/access/user"
 	"github.com/tangvis/erp/agent/email"
 	"github.com/tangvis/erp/agent/templates"
 	"github.com/tangvis/erp/app"
-	"github.com/tangvis/erp/app/system"
-	"github.com/tangvis/erp/middleware"
-
-	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
-
-	"github.com/tangvis/erp/access"
-	pingHTTP "github.com/tangvis/erp/access/ping"
-	userHTTP "github.com/tangvis/erp/access/user"
 	"github.com/tangvis/erp/app/apirate/service"
+	"github.com/tangvis/erp/app/system"
 	getter "github.com/tangvis/erp/conf/config"
+	"github.com/tangvis/erp/middleware"
 	"github.com/tangvis/erp/middleware/engine"
+	"net/http"
 )
 
 type application struct {
-	pingController     *pingHTTP.Controller
-	userController     *userHTTP.Controller
-	categoryController *category.Controller
+	pingController    *pingHTTP.Controller
+	userController    *userHTTP.Controller
+	productController *product.Controller
+	systemController  *systemHTTP.Controller
 
 	rateLimiterAPP service.APP
 	sessionStore   engine.Store
@@ -38,7 +37,8 @@ func (app *application) GetRouterGroups() []engine.Controller {
 	return []engine.Controller{
 		app.pingController,
 		app.userController,
-		app.categoryController,
+		app.productController,
+		app.systemController,
 	}
 }
 

@@ -3,7 +3,7 @@ package common
 import "time"
 
 const (
-	Category = "category:"
+	Category = "product:"
 	Brand    = "brand:"
 )
 

@@ -16,6 +16,32 @@ type ServiceActionLog struct {
 	repo repository.Repo
 }
 
+func (s ServiceActionLog) List(ctx context.Context, req *define.ListRequest) ([]define.ActionLog, error) {
+	result, err := s.repo.List(ctx, repository.ListQuery{
+		ModuleID: req.ModuleID,
+		BizID:    req.BizID,
+		Offset:   req.Offset,
+		Limit:    req.Count,
+	})
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]define.ActionLog, len(result))
+	for i, v := range result {
+		ret[i] = define.ActionLog{
+			ID:       v.ID,
+			ModuleID: v.ModuleID,
+			BizID:    v.BizID,
+			Action:   v.ActionType.String(),
+			Operator: v.Operator,
+			Content:  v.Content,
+			Ctime:    v.Ctime,
+		}
+	}
+
+	return ret, nil
+}
+
 func (s ServiceActionLog) AsyncCreate(ctx context.Context,
 	operator string,
 	moduleID define.Module,

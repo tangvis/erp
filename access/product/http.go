@@ -1,4 +1,4 @@
-package category
+package product
 
 import (
 	"net/http"
@@ -29,11 +29,11 @@ func NewController(
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
-		// category
-		engine.NewRouter(http.MethodPost, "/category/add", c.engine.JSONAuth(c.CateAdd)),
-		engine.NewRouter(http.MethodPost, "/category/update", c.engine.JSONAuth(c.CateUpdate)),
-		engine.NewRouter(http.MethodGet, "/category/list", c.engine.JSONAuth(c.CateList)),
-		engine.NewRouter(http.MethodPost, "/category/delete", c.engine.JSONAuth(c.CateRemove)),
+		// product
+		engine.NewRouter(http.MethodPost, "/product/add", c.engine.JSONAuth(c.CateAdd)),
+		engine.NewRouter(http.MethodPost, "/product/update", c.engine.JSONAuth(c.CateUpdate)),
+		engine.NewRouter(http.MethodGet, "/product/list", c.engine.JSONAuth(c.CateList)),
+		engine.NewRouter(http.MethodPost, "/product/delete", c.engine.JSONAuth(c.CateRemove)),
 
 		// brand
 		engine.NewRouter(http.MethodPost, "/brand/add", c.engine.JSONAuth(c.BrandAdd)),

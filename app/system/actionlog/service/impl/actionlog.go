@@ -85,7 +85,7 @@ func Compare(before, after any) (map[string]string, error) {
 		afterStr := stringValue(afterVal.Field(i).Interface())
 
 		if beforeStr != afterStr {
-			changeDescription := fmt.Sprintf("changed from [%v] to [%v]", beforeStr, afterStr)
+			changeDescription := fmt.Sprintf("[%v] has been changed to [%v]", beforeStr, afterStr)
 			changes[alTag] = changeDescription
 		}
 	}

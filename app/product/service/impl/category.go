@@ -59,7 +59,14 @@ func (c CategoryImpl) Remove(ctx context.Context, user *common.UserInfo, id ...u
 	if err := c.CheckBeforeRemove(ctx, user, id...); err != nil {
 		return err
 	}
-	return c.repo.DeleteCategoryByIDs(ctx, user.Email, id...)
+	err := c.repo.DeleteCategoryByIDs(ctx, user.Email, id...)
+	if err != nil {
+		return err
+	}
+	for _, _id := range id {
+		c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, _id, actionLogDefine.DELETE, nil, nil)
+	}
+	return nil
 }
 
 func (c CategoryImpl) CheckBeforeRemove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
@@ -85,6 +92,7 @@ func (c CategoryImpl) Update(ctx context.Context, user *common.UserInfo, req *de
 	if err != nil {
 		return nil, err
 	}
+	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.UPDATE, cate, category)
 	return converter.CategoryConvert(category), nil
 }
 

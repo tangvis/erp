@@ -6,6 +6,8 @@ import (
 	"github.com/tangvis/erp/app/system/actionlog/define"
 	"github.com/tangvis/erp/app/system/actionlog/repository"
 	"github.com/tangvis/erp/app/system/actionlog/service"
+	ctxUtil "github.com/tangvis/erp/pkg/context"
+	logutil "github.com/tangvis/erp/pkg/log"
 	"reflect"
 	"strings"
 )
@@ -14,9 +16,51 @@ type ServiceActionLog struct {
 	repo repository.Repo
 }
 
+func (s ServiceActionLog) List(ctx context.Context, req *define.ListRequest) ([]define.ActionLog, error) {
+	result, err := s.repo.List(ctx, repository.ListQuery{
+		ModuleID: req.ModuleID,
+		BizID:    req.BizID,
+		Offset:   req.Offset,
+		Limit:    req.Count,
+	})
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]define.ActionLog, len(result))
+	for i, v := range result {
+		ret[i] = define.ActionLog{
+			ID:       v.ID,
+			ModuleID: v.ModuleID,
+			BizID:    v.BizID,
+			Action:   v.ActionType.String(),
+			Operator: v.Operator,
+			Content:  v.Content,
+			Ctime:    v.Ctime,
+		}
+	}
+
+	return ret, nil
+}
+
+func (s ServiceActionLog) AsyncCreate(ctx context.Context,
+	operator string,
+	moduleID define.Module,
+	bizID uint64,
+	action define.Action,
+	before, after any,
+) {
+	go func() {
+		neCtx := ctxUtil.ForkContext(ctx)
+		if err := s.Create(neCtx, operator, moduleID, bizID, action, before, after); err != nil {
+			logutil.CtxError(neCtx, err.Error())
+		}
+	}()
+}
+
 func (s ServiceActionLog) Create(ctx context.Context,
 	operator string,
-	moduleID, bizID uint64,
+	moduleID define.Module,
+	bizID uint64,
 	action define.Action,
 	before, after any,
 ) error {
@@ -27,14 +71,13 @@ func (s ServiceActionLog) Create(ctx context.Context,
 		Operator:   operator,
 	}
 	switch action {
-	case define.Add:
-		tab.Content = "创建"
-	case define.Delete:
-		tab.Content = "删除"
-	case define.Update:
+	case define.UPDATE:
 		content, err := Compare(before, after)
 		if err != nil {
 			return err
+		}
+		if len(content) == 0 {
+			return nil
 		}
 		tab.Content = updateDetail(content)
 	default:
@@ -45,7 +88,7 @@ func (s ServiceActionLog) Create(ctx context.Context,
 
 func NewActionLogAPP(
 	repo repository.Repo,
-) service.APPActionLog {
+) service.APP {
 	return &ServiceActionLog{
 		repo: repo,
 	}
@@ -81,14 +124,11 @@ func Compare(before, after any) (map[string]string, error) {
 			continue // Skip fields without 'al' tag
 		}
 
-		beforeFieldVal := beforeVal.Field(i).Interface()
-		afterFieldVal := afterVal.Field(i).Interface()
-
-		beforeStr := stringValue(beforeFieldVal)
-		afterStr := stringValue(afterFieldVal)
+		beforeStr := stringValue(beforeVal.Field(i).Interface())
+		afterStr := stringValue(afterVal.Field(i).Interface())
 
 		if beforeStr != afterStr {
-			changeDescription := fmt.Sprintf("changed from [%v] to [%v]", beforeStr, afterStr)
+			changeDescription := fmt.Sprintf("[%v] has been changed to [%v]", beforeStr, afterStr)
 			changes[alTag] = changeDescription
 		}
 	}

@@ -17,3 +17,22 @@ func (u *UserInfo) String() string {
 
 	return string(b)
 }
+
+type PageInfo struct {
+	PageNo int `json:"page_no"`
+	Count  int `json:"count"`
+
+	Offset int `json:"offset"`
+}
+
+func (p *PageInfo) Validate() error {
+	if p.PageNo == 0 {
+		p.PageNo = 1
+	}
+	if p.Count == 0 {
+		p.Count = 10
+	}
+	p.Offset = (p.PageNo - 1) * p.Count
+
+	return nil
+}

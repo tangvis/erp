@@ -7,11 +7,15 @@ import (
 
 type ActionLogTab struct {
 	ID         uint64
-	ModuleID   uint64
+	ModuleID   define.Module
 	BizID      uint64
 	ActionType define.Action
 	Operator   string
 	// json type
 	Content string
 	mysql.BaseModel
+}
+
+func (tab *ActionLogTab) TableName() string {
+	return "action_log_tab"
 }

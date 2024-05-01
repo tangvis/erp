@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	actionLogDefine "github.com/tangvis/erp/app/system/actionlog/define"
+	actionLog "github.com/tangvis/erp/app/system/actionlog/service"
 
 	"github.com/tangvis/erp/app/product/converter"
 	"github.com/tangvis/erp/app/product/define"
@@ -11,7 +13,8 @@ import (
 )
 
 type BrandImpl struct {
-	repo meta.Repo
+	repo      meta.Repo
+	actionLog actionLog.APP
 }
 
 func (b BrandImpl) Add(ctx context.Context, user *common.UserInfo, req *define.AddBrandRequest) (*define.Brand, error) {
@@ -28,6 +31,7 @@ func (b BrandImpl) Add(ctx context.Context, user *common.UserInfo, req *define.A
 	if err != nil {
 		return nil, err
 	}
+	b.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Brand, brand.ID, actionLogDefine.ADD, nil, nil)
 	return converter.BrandConvert(brand), nil
 }
 
@@ -58,6 +62,7 @@ func (b BrandImpl) Update(ctx context.Context, user *common.UserInfo, req *defin
 	if err != nil {
 		return nil, err
 	}
+	b.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Brand, brand.ID, actionLogDefine.UPDATE, brands[0], ret)
 	return converter.BrandConvert(ret), nil
 }
 
@@ -73,13 +78,22 @@ func (b BrandImpl) CheckBrandName(ctx context.Context, userEmail, name string, i
 }
 
 func (b BrandImpl) Remove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
-	return b.repo.DeleteBrandsByIDs(ctx, user.Email, id...)
+	err := b.repo.DeleteBrandsByIDs(ctx, user.Email, id...)
+	if err != nil {
+		return err
+	}
+	for _, _id := range id {
+		b.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Brand, _id, actionLogDefine.DELETE, nil, nil)
+	}
+	return nil
 }
 
 func NewBrandImpl(
 	repo meta.Repo,
+	actionLog actionLog.APP,
 ) service.Brand {
 	return &BrandImpl{
-		repo: repo,
+		repo:      repo,
+		actionLog: actionLog,
 	}
 }

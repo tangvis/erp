@@ -80,6 +80,9 @@ func (s ServiceActionLog) Create(ctx context.Context,
 		if err != nil {
 			return err
 		}
+		if len(content) == 0 {
+			return nil
+		}
 		tab.Content = updateDetail(content)
 	default:
 

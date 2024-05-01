@@ -85,6 +85,7 @@ func (c CategoryImpl) Update(ctx context.Context, user *common.UserInfo, req *de
 	if err != nil {
 		return nil, err
 	}
+	before := cate
 	cate.Name = req.Name
 	cate.URL = req.URL
 	cate.Desc = req.Desc
@@ -92,7 +93,7 @@ func (c CategoryImpl) Update(ctx context.Context, user *common.UserInfo, req *de
 	if err != nil {
 		return nil, err
 	}
-	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.UPDATE, cate, category)
+	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.UPDATE, before, category)
 	return converter.CategoryConvert(category), nil
 }
 

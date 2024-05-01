@@ -62,7 +62,7 @@ func (b BrandImpl) Update(ctx context.Context, user *common.UserInfo, req *defin
 	if err != nil {
 		return nil, err
 	}
-	b.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Brand, brand.ID, actionLogDefine.UPDATE, brand, ret)
+	b.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Brand, brand.ID, actionLogDefine.UPDATE, brands[0], ret)
 	return converter.BrandConvert(ret), nil
 }
 

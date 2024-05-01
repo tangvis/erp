@@ -16,6 +16,10 @@ type BrandTab struct {
 	mysql.BaseModel
 }
 
+func (tab *BrandTab) TableName() string {
+	return "brand_tab"
+}
+
 type CategoryTab struct {
 	PID        uint64 `gorm:"column:pid"`
 	Name       string

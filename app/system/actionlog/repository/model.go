@@ -15,3 +15,7 @@ type ActionLogTab struct {
 	Content string
 	mysql.BaseModel
 }
+
+func (tab *ActionLogTab) TableName() string {
+	return "action_log_tab"
+}

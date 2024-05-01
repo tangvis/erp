@@ -81,11 +81,8 @@ func Compare(before, after any) (map[string]string, error) {
 			continue // Skip fields without 'al' tag
 		}
 
-		beforeFieldVal := beforeVal.Field(i).Interface()
-		afterFieldVal := afterVal.Field(i).Interface()
-
-		beforeStr := stringValue(beforeFieldVal)
-		afterStr := stringValue(afterFieldVal)
+		beforeStr := stringValue(beforeVal.Field(i).Interface())
+		afterStr := stringValue(afterVal.Field(i).Interface())
 
 		if beforeStr != afterStr {
 			changeDescription := fmt.Sprintf("changed from [%v] to [%v]", beforeStr, afterStr)

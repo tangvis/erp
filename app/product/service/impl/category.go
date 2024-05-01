@@ -38,7 +38,7 @@ func (c CategoryImpl) Add(ctx context.Context, user *common.UserInfo, req *defin
 	if err != nil {
 		return nil, err
 	}
-	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.Add, nil, nil)
+	c.actionLog.AsyncCreate(ctx, user.Email, actionLogDefine.Category, category.ID, actionLogDefine.ADD, nil, nil)
 	return converter.CategoryConvert(category), nil
 }
 

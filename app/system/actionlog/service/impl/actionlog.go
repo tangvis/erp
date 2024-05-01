@@ -45,11 +45,11 @@ func (s ServiceActionLog) Create(ctx context.Context,
 		Operator:   operator,
 	}
 	switch action {
-	case define.Add:
+	case define.ADD:
 		tab.Content = "创建"
-	case define.Delete:
+	case define.DELETE:
 		tab.Content = "删除"
-	case define.Update:
+	case define.UPDATE:
 		content, err := Compare(before, after)
 		if err != nil {
 			return err

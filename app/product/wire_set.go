@@ -14,4 +14,5 @@ var RepoSet = wire.NewSet(
 var ServiceSet = wire.NewSet(
 	RepoSet,
 	impl.NewCategoryImpl,
+	impl.NewBrandImpl,
 )

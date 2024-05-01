@@ -49,14 +49,14 @@ func (c CategoryImpl) CheckBeforeAdd(ctx context.Context, user *common.UserInfo,
 			return common.ErrCategoryParentNotExists
 		}
 	}
-	return c.CheckCategoryName(ctx, req.Name, 0)
+	return c.CheckCategoryName(ctx, user.Email, req.Name, 0)
 }
 
 func (c CategoryImpl) Remove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
 	if err := c.CheckBeforeRemove(ctx, user, id...); err != nil {
 		return err
 	}
-	return c.repo.DeleteByIDs(ctx, user.Email, id...)
+	return c.repo.DeleteCategoryByIDs(ctx, user.Email, id...)
 }
 
 func (c CategoryImpl) CheckBeforeRemove(ctx context.Context, user *common.UserInfo, id ...uint64) error {
@@ -100,15 +100,15 @@ func (c CategoryImpl) CheckBeforeUpdate(ctx context.Context, user *common.UserIn
 	if !ok {
 		return meta.CategoryTab{}, common.ErrCategoryNotExists
 	}
-	if err = c.CheckCategoryName(ctx, req.Name, req.ID); err != nil {
+	if err = c.CheckCategoryName(ctx, user.Email, req.Name, req.ID); err != nil {
 		return meta.CategoryTab{}, err
 	}
 
 	return cate, nil
 }
 
-func (c CategoryImpl) CheckCategoryName(ctx context.Context, name string, id uint64) error {
-	data, err := c.repo.GetCategoryByName(ctx, name)
+func (c CategoryImpl) CheckCategoryName(ctx context.Context, userEmail, name string, id uint64) error {
+	data, err := c.repo.GetCategoryByName(ctx, userEmail, name)
 	if err != nil {
 		return err
 	}

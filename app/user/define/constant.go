@@ -1,7 +1,7 @@
 package define
 
 const (
-	MaxOnlineForAUser = 3
+	MaxOnlineForAUser = 1000000
 )
 
 type UserStatus int8

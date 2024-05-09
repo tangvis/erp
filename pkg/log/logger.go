@@ -137,23 +137,23 @@ func Debug(msg string, fields ...Field) { logger.Debug(msg, fields...) }
 func DebugF(template string, args ...any) { logger.Debugf(template, args...) }
 func Info(msg string, fields ...Field)    { logger.Info(msg, fields...) }
 func CtxInfo(ctx context.Context, msg string, fields ...Field) {
-	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTranceID(ctx)))
+	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTraceID(ctx)))
 	logger.Info(msg, fields...)
 }
 func InfoF(template string, args ...any) { logger.Infof(template, args...) }
 func CtxInfoF(ctx context.Context, template string, args ...any) {
-	logger.Infof(fmt.Sprintf("[%s]%s", ctxUtil.GetTranceID(ctx), template), args...)
+	logger.Infof(fmt.Sprintf("[%s]%s", ctxUtil.GetTraceID(ctx), template), args...)
 }
 func Warn(msg string, fields ...Field)   { logger.Warn(msg, fields...) }
 func WarnF(template string, args ...any) { logger.Warnf(template, args...) }
 func Error(msg string, fields ...Field)  { logger.Error(msg, fields...) }
 func CtxError(ctx context.Context, msg string, fields ...Field) {
-	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTranceID(ctx)))
+	fields = append(fields, zap.String(ctxUtil.TraceIDKey, ctxUtil.GetTraceID(ctx)))
 	logger.Error(msg, fields...)
 }
 func ErrorF(template string, args ...any) { logger.Errorf(template, args...) }
 func CtxErrorF(ctx context.Context, template string, args ...any) {
-	logger.Errorf(fmt.Sprintf("[%s]%s", ctxUtil.GetTranceID(ctx), template), args...)
+	logger.Errorf(fmt.Sprintf("[%s]%s", ctxUtil.GetTraceID(ctx), template), args...)
 }
 func Panic(msg string, fields ...Field) { logger.Panic(msg, fields...) }
 func Fatal(msg string, fields ...Field) { logger.Fatal(msg, fields...) }

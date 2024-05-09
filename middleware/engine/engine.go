@@ -191,7 +191,7 @@ func toResponse(ctx *gin.Context, data any, err error) JSONResponse {
 		Message: "Success",
 	}
 	if config.Config.GetEnableResponseTraceID() {
-		resp.TranceID = GetTraceID(ctx)
+		resp.TraceID = GetTraceID(ctx)
 	}
 	// 如果是空数据不返回nil，而是返回一个空的map给前端
 	if IsNilValue(data) {

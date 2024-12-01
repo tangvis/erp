@@ -32,7 +32,7 @@ func PanicWrapper(c *gin.Context) {
 			String(c, http.StatusInternalServerError, "panic")
 		}
 	}(time.Now())
-	time.Sleep(300 * time.Millisecond)
+	//time.Sleep(300 * time.Millisecond)
 	c.Next()
 }
 

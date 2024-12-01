@@ -20,4 +20,5 @@ type Repo interface {
 	GetBrandsByUser(ctx context.Context, userEmail string, query BrandQuery) ([]BrandTab, error)
 	SaveBrand(ctx context.Context, brand BrandTab) (BrandTab, error)
 	DeleteBrandsByIDs(ctx context.Context, userEmail string, id ...uint64) error
+	CountBrand(ctx context.Context, userEmail string, query BrandQuery) (int64, error)
 }

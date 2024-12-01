@@ -121,6 +121,12 @@ type ListBrandRequest struct {
 	common.PageInfo
 }
 
+type ListBrandResponse struct {
+	Items []*Brand `json:"items"`
+
+	Total int64 `json:"total"`
+}
+
 type UpdateBrandRequest struct {
 	ID uint64 `json:"id,omitempty" binding:"required"`
 	AddBrandRequest

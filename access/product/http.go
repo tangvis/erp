@@ -38,7 +38,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 		// brand
 		engine.NewRouter(http.MethodPost, "/brand/add", c.engine.JSONAuth(c.BrandAdd)),
 		engine.NewRouter(http.MethodPost, "/brand/update", c.engine.JSONAuth(c.BrandUpdate)),
-		engine.NewRouter(http.MethodGet, "/brand/list", c.engine.JSONAuth(c.BrandList)),
+		engine.NewRouter(http.MethodPost, "/brand/list", c.engine.JSONAuth(c.BrandList)),
 		engine.NewRouter(http.MethodPost, "/brand/delete", c.engine.JSONAuth(c.BrandRemove)),
 	}
 }

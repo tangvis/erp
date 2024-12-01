@@ -2,8 +2,6 @@ package meta
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/tangvis/erp/common"
 	"gorm.io/gorm"
 )
 
@@ -45,18 +43,18 @@ func (r RepoImpl) DeleteBrandsByIDs(ctx context.Context, userEmail string, id ..
 }
 
 func (r RepoImpl) GetBrandsByUser(ctx context.Context, userEmail string, query BrandQuery) ([]BrandTab, error) {
-	qJson, _ := json.Marshal(query)
-	var (
-		data     = make([]BrandTab, 0)
-		cacheKey = common.BrandKey(userEmail, string(qJson))
-	)
-
-	if err := r.cache.GetExUnmarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry); err != nil {
-		return nil, err
-	}
-	if len(data) > 0 {
-		return data, nil
-	}
+	//qJson, _ := json.Marshal(query)
+	//var (
+	//	data     = make([]BrandTab, 0)
+	//	cacheKey = common.BrandKey(userEmail, string(qJson))
+	//)
+	//
+	//if err := r.cache.GetExUnmarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry); err != nil {
+	//	return nil, err
+	//}
+	//if len(data) > 0 {
+	//	return data, nil
+	//}
 	return r.getAndCacheBrand(ctx, userEmail, query)
 }
 
@@ -66,16 +64,16 @@ func (r RepoImpl) brandListGetQuery(ctx context.Context, userEmail string, query
 		db = db.Where("name like ?", "%"+query.Name+"%")
 	}
 
-	return db.Offset(query.Offset)
+	return db
 }
 
 func (r RepoImpl) getAndCacheBrand(ctx context.Context, userEmail string, query BrandQuery) ([]BrandTab, error) {
-	qJson, _ := json.Marshal(query)
+	//qJson, _ := json.Marshal(query)
 	var (
-		data     = make([]BrandTab, 0)
-		cacheKey = common.BrandKey(userEmail, string(qJson))
+		data = make([]BrandTab, 0)
+		//cacheKey = common.BrandKey(userEmail, string(qJson))
 	)
-	db := r.brandListGetQuery(ctx, userEmail, query)
+	db := r.brandListGetQuery(ctx, userEmail, query).Offset(query.Offset)
 	if query.Limit > 0 {
 		db = db.Limit(query.Limit)
 	}
@@ -83,5 +81,15 @@ func (r RepoImpl) getAndCacheBrand(ctx context.Context, userEmail string, query 
 	if err != nil {
 		return nil, err
 	}
-	return data, r.cache.SetExMarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry)
+	//return data, r.cache.SetExMarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry)
+	return data, nil
+}
+
+func (r RepoImpl) CountBrand(ctx context.Context, userEmail string, query BrandQuery) (int64, error) {
+	var count int64
+	err := r.brandListGetQuery(ctx, userEmail, query).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

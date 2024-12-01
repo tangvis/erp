@@ -9,14 +9,14 @@ var (
 	ErrConfInvalidArguments = ecode.NewErrorConf(-10)
 
 	// ErrConfPing ping
-	ErrConfPing       = ecode.NewBusinessErrorCode(ecode.Ping, 1)
+	ErrConfPing       = ecode.NewSystemErrorCode(ecode.Ping, 1)
 	ErrPingFailed     = ecode.NewErrorConf(ErrConfPing)
 	ErrPingFailedTest = ErrPingFailed.New("ping failed test")
 
-	ErrUser             = ecode.NewErrorConf(ecode.NewBusinessErrorCode(ecode.User, 1))
+	ErrUser             = ecode.NewErrorConf(ecode.NewSystemErrorCode(ecode.User, 2))
 	ErrUserInfo         = ErrUser.New("username or password error")
 	ErrUserTooManyLogin = ErrUser.New("too many login, please logout other sessions then try again")
-	ErrAuth             = ErrUser.New("auth failed")
+	ErrAuth             = ecode.NewErrorConf(ecode.NewSystemErrorCode(ecode.User, 1)).New("auth failed")
 
 	ErrDB               = ecode.NewSystemErrorCode(ecode.SystemDB, 10)
 	ErrDBConf           = ecode.NewErrorConf(ErrDB)

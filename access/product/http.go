@@ -29,16 +29,16 @@ func NewController(
 
 func (c *Controller) URLPatterns() []engine.Router {
 	return []engine.Router{
-		// product
-		engine.NewRouter(http.MethodPost, "/product/add", c.engine.JSONAuth(c.CateAdd)),
-		engine.NewRouter(http.MethodPost, "/product/update", c.engine.JSONAuth(c.CateUpdate)),
-		engine.NewRouter(http.MethodGet, "/product/list", c.engine.JSONAuth(c.CateList)),
-		engine.NewRouter(http.MethodPost, "/product/delete", c.engine.JSONAuth(c.CateRemove)),
+		// category
+		engine.NewRouter(http.MethodPost, "/category/add", c.engine.JSONAuth(c.CateAdd)),
+		engine.NewRouter(http.MethodPost, "/category/update", c.engine.JSONAuth(c.CateUpdate)),
+		engine.NewRouter(http.MethodGet, "/category/list", c.engine.JSONAuth(c.CateList)),
+		engine.NewRouter(http.MethodPost, "/category/delete", c.engine.JSONAuth(c.CateRemove)),
 
 		// brand
 		engine.NewRouter(http.MethodPost, "/brand/add", c.engine.JSONAuth(c.BrandAdd)),
 		engine.NewRouter(http.MethodPost, "/brand/update", c.engine.JSONAuth(c.BrandUpdate)),
-		engine.NewRouter(http.MethodGet, "/brand/list", c.engine.JSONAuth(c.BrandList)),
+		engine.NewRouter(http.MethodPost, "/brand/list", c.engine.JSONAuth(c.BrandList)),
 		engine.NewRouter(http.MethodPost, "/brand/delete", c.engine.JSONAuth(c.BrandRemove)),
 	}
 }
@@ -80,7 +80,11 @@ func (c *Controller) BrandAdd(ctx engine.Context, userInfo *common.UserInfo) (an
 }
 
 func (c *Controller) BrandList(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
-	return c.brandAPP.List(ctx.GetCtx(), userInfo)
+	var req define.ListBrandRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return c.brandAPP.List(ctx.GetCtx(), &req, userInfo)
 }
 
 func (c *Controller) BrandUpdate(ctx engine.Context, userInfo *common.UserInfo) (any, error) {

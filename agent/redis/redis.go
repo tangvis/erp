@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -48,6 +49,9 @@ func (c Client) Del(ctx context.Context, key ...string) error {
 
 func (c Client) GetExUnmarshal(ctx context.Context, key string, value any, expiration time.Duration) error {
 	b, err := c.Cli.GetEx(ctx, key, expiration).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}

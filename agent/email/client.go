@@ -16,11 +16,11 @@ type client struct {
 // 默认通用发件人
 func NewDefaultClient() Client {
 	return NewClient(&mail.SMTPConfig{
-		Server:        "smtp.shopeemobile.com",
+		Server:        "smtp.google.com",
 		Port:          "587",
 		ServerTimeout: 10,
 		FeedbackName:  "SPX System Email",
-		FeedbackEmail: "stats.spx@shopee.com",
+		FeedbackEmail: "stats.spx@google.com",
 	})
 }
 

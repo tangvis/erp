@@ -35,12 +35,24 @@ func (b BrandImpl) Add(ctx context.Context, user *common.UserInfo, req *define.A
 	return converter.BrandConvert(brand), nil
 }
 
-func (b BrandImpl) List(ctx context.Context, user *common.UserInfo) ([]*define.Brand, error) {
-	brands, err := b.repo.GetBrandsByUser(ctx, user.Email)
+func (b BrandImpl) List(ctx context.Context, req *define.ListBrandRequest, user *common.UserInfo) (*define.ListBrandResponse, error) {
+	q := meta.BrandQuery{
+		Name:   req.Name,
+		Offset: req.Offset,
+		Limit:  req.Count,
+	}
+	brands, err := b.repo.GetBrandsByUser(ctx, user.Email, q)
 	if err != nil {
 		return nil, err
 	}
-	return converter.BrandsConvert(brands), nil
+	total, err := b.repo.CountBrand(ctx, user.Email, q)
+	if err != nil {
+		return nil, err
+	}
+	return &define.ListBrandResponse{
+		Items: converter.BrandsConvert(brands),
+		Total: total,
+	}, nil
 }
 
 func (b BrandImpl) Update(ctx context.Context, user *common.UserInfo, req *define.UpdateBrandRequest) (*define.Brand, error) {

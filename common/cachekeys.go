@@ -1,6 +1,9 @@
 package common
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 const (
 	Category = "product:"
@@ -19,9 +22,9 @@ func CategoryKey(email string) CacheKey {
 	}
 }
 
-func BrandKey(email string) CacheKey {
+func BrandKey(element ...string) CacheKey {
 	return CacheKey{
-		Key:    Brand + email,
+		Key:    Brand + ":" + strings.Join(element, ":"),
 		Expiry: 30 * time.Minute,
 	}
 }

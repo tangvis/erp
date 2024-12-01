@@ -80,7 +80,11 @@ func (c *Controller) BrandAdd(ctx engine.Context, userInfo *common.UserInfo) (an
 }
 
 func (c *Controller) BrandList(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
-	return c.brandAPP.List(ctx.GetCtx(), userInfo)
+	var req define.ListBrandRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return c.brandAPP.List(ctx.GetCtx(), &req, userInfo)
 }
 
 func (c *Controller) BrandUpdate(ctx engine.Context, userInfo *common.UserInfo) (any, error) {

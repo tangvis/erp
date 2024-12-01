@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	ginEngine := gin.New()
-	ginEngine.Use(cors.Default())
+	// Custom CORS configuration that allows all origins
+	ginEngine.Use(disableAllCORSPolicy())
 	initGlobalResources()
 	dep, err := newDependence()
 	if err != nil {

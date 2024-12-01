@@ -2,8 +2,16 @@ package meta
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/tangvis/erp/common"
+	"gorm.io/gorm"
 )
+
+type BrandQuery struct {
+	Name   string
+	Offset int
+	Limit  int
+}
 
 func (r RepoImpl) GetBrandByName(ctx context.Context, userEmail string, brandName ...string) ([]BrandTab, error) {
 	ret := make([]BrandTab, 0)
@@ -23,7 +31,7 @@ func (r RepoImpl) SaveBrand(ctx context.Context, brand BrandTab) (BrandTab, erro
 		return data, err
 	}
 	// refresh cache
-	_, err = r.getAndCacheBrand(ctx, brand.CreateBy)
+	_, err = r.getAndCacheBrand(ctx, brand.CreateBy, BrandQuery{})
 
 	return data, err
 }
@@ -32,14 +40,15 @@ func (r RepoImpl) DeleteBrandsByIDs(ctx context.Context, userEmail string, id ..
 	if err := r.db.WithContext(ctx).Where("create_by = ? and id in (?)", userEmail, id).Delete(&BrandTab{}).Error; err != nil {
 		return err
 	}
-	_, err := r.getAndCacheBrand(ctx, userEmail)
+	_, err := r.getAndCacheBrand(ctx, userEmail, BrandQuery{})
 	return err
 }
 
-func (r RepoImpl) GetBrandsByUser(ctx context.Context, userEmail string) ([]BrandTab, error) {
+func (r RepoImpl) GetBrandsByUser(ctx context.Context, userEmail string, query BrandQuery) ([]BrandTab, error) {
+	qJson, _ := json.Marshal(query)
 	var (
 		data     = make([]BrandTab, 0)
-		cacheKey = common.BrandKey(userEmail)
+		cacheKey = common.BrandKey(userEmail, string(qJson))
 	)
 
 	if err := r.cache.GetExUnmarshal(ctx, cacheKey.Key, &data, cacheKey.Expiry); err != nil {
@@ -48,15 +57,29 @@ func (r RepoImpl) GetBrandsByUser(ctx context.Context, userEmail string) ([]Bran
 	if len(data) > 0 {
 		return data, nil
 	}
-	return r.getAndCacheBrand(ctx, userEmail)
+	return r.getAndCacheBrand(ctx, userEmail, query)
 }
 
-func (r RepoImpl) getAndCacheBrand(ctx context.Context, userEmail string) ([]BrandTab, error) {
+func (r RepoImpl) brandListGetQuery(ctx context.Context, userEmail string, query BrandQuery) *gorm.DB {
+	db := r.db.WithContext(ctx).Model(&BrandTab{}).Where("create_by = ?", userEmail)
+	if len(query.Name) > 0 {
+		db = db.Where("name like ?", "%"+query.Name+"%")
+	}
+
+	return db.Offset(query.Offset)
+}
+
+func (r RepoImpl) getAndCacheBrand(ctx context.Context, userEmail string, query BrandQuery) ([]BrandTab, error) {
+	qJson, _ := json.Marshal(query)
 	var (
 		data     = make([]BrandTab, 0)
-		cacheKey = common.BrandKey(userEmail)
+		cacheKey = common.BrandKey(userEmail, string(qJson))
 	)
-	err := r.db.WithContext(ctx).Model(&BrandTab{}).Where("create_by = ?", userEmail).Find(&data).Error
+	db := r.brandListGetQuery(ctx, userEmail, query)
+	if query.Limit > 0 {
+		db = db.Limit(query.Limit)
+	}
+	err := db.Find(&data).Error
 	if err != nil {
 		return nil, err
 	}

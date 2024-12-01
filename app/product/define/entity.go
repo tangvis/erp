@@ -1,6 +1,9 @@
 package define
 
-import "github.com/shopspring/decimal"
+import (
+	"github.com/shopspring/decimal"
+	"github.com/tangvis/erp/common"
+)
 
 type Goods struct {
 	SpuInfo Spu `json:"spu_info"`
@@ -110,6 +113,12 @@ type AddBrandRequest struct {
 	Name string `json:"name,omitempty" binding:"required"`
 	Desc string `json:"desc,omitempty"`
 	URL  string `json:"url,omitempty"`
+}
+
+type ListBrandRequest struct {
+	Name string `json:"name,omitempty"`
+
+	common.PageInfo
 }
 
 type UpdateBrandRequest struct {

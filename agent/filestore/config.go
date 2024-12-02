@@ -1,9 +1,11 @@
 package filestore
 
+import "github.com/tangvis/erp/common"
+
 type Options struct {
-	AccessKey        string `yaml:"AccessKey" json:"AccessKey"`
-	SecretKey        string `yaml:"SecretKey" json:"SecretKey"`
-	Endpoint         string `yaml:"Endpoint" json:"Endpoint"`
+	AccessKey string `yaml:"AccessKey" json:"AccessKey"`
+	SecretKey string `yaml:"SecretKey" json:"SecretKey"`
+	//Endpoint         string `yaml:"Endpoint" json:"Endpoint"`
 	Bucket           string `yaml:"Bucket" json:"Bucket"`
 	Region           string `yaml:"Region" json:"Region"`
 	S3ForcePathStyle bool   `yaml:"S3ForcePathStyle" json:"S3ForcePathStyle"`

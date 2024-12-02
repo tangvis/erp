@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
 	"net/url"
 	"path/filepath"
@@ -12,40 +14,42 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/google/uuid"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
+	"github.com/tangvis/erp/common"
 	logutil "github.com/tangvis/erp/pkg/log"
 )
 
 // FileStore s3 store wrapper.
 type FileStore struct {
-	sess          *session.Session
-	srv           *s3.S3
+	client        *s3.Client
 	defaultBucket string
 	publicRead    bool
 }
 
 // NewFileStore create new s3 filestore.
-func NewFileStore(options *Options) (Client, error) {
-	c := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(options.AccessKey, options.SecretKey, ""),
-		Endpoint:         aws.String(options.Endpoint),
-		Region:           aws.String("s3"),
-		S3ForcePathStyle: aws.Bool(true), // 设为true「bucket-in-url的方式访问」
-	}
-	sess, err := session.NewSession(c)
+func NewFileStore(options *Options) (*FileStore, error) {
+	// Load the AWS configuration with custom endpoint and credentials
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(options.AccessKey, options.SecretKey, "")),
+		config.WithRegion(options.Region), // You may need to adjust the region as necessary
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	s := s3.New(sess)
+	// Create an S3 client
+	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.UsePathStyle = options.S3ForcePathStyle // Force path style
+	})
 
-	return &FileStore{srv: s, sess: sess, defaultBucket: options.Bucket}, nil
+	return &FileStore{
+		client:        s3Client,
+		defaultBucket: options.Bucket,
+	}, nil
 }
 
 func (fs *FileStore) GetDefaultBucketName() string {
@@ -53,12 +57,20 @@ func (fs *FileStore) GetDefaultBucketName() string {
 }
 
 // DeleteFile delete file.
-func (fs *FileStore) DeleteFile(bucket, key string) error {
-	delOpt := &s3.DeleteObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
+func (fs *FileStore) DeleteFile(ctx context.Context, bucket string, objectKeys []string) error {
+	var objectIds []types.ObjectIdentifier
+	for _, key := range objectKeys {
+		objectIds = append(objectIds, types.ObjectIdentifier{Key: aws.String(key)})
 	}
-	_, err := fs.srv.DeleteObject(delOpt)
+	output, err := fs.client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		Bucket: aws.String(bucket),
+		Delete: &types.Delete{Objects: objectIds},
+	})
+	if err != nil {
+		logutil.CtxErrorF(ctx, "Couldn't delete objects from bucket %v. Here's why: %v", bucket, err)
+	} else {
+		logutil.CtxInfoF(ctx, "Deleted %v objects, bucket %s, keys %+v", len(output.Deleted), bucket, objectKeys)
+	}
 	return err
 }
 
@@ -77,70 +89,56 @@ func ParseBucketAndKeyFromURL(rawURL string) (string, string, error) {
 }
 
 func (fs *FileStore) UploadBytes(ctx context.Context, filename string, data []byte) (string, error) {
-	return fs.Upload(ctx, filename, bytes.NewBuffer(data))
+	return filename, fs.Upload(ctx, fs.GetDefaultBucketName(), filename, bytes.NewBuffer(data))
 }
 
-func (fs *FileStore) Upload(ctx context.Context, filename string, body io.Reader) (string, error) {
-	uploader := s3manager.NewUploader(fs.sess)
-	suffix := filepath.Ext(filename)
-	contentType := SuffixMap[suffix]
-	if contentType == "" {
-		contentType = string(common.MimeRaw)
-	}
-	path := fmt.Sprintf("downloads/spx_in_station/%s/%s", uuid.New().String(), filename)
-	uploadInput := &s3manager.UploadInput{
-		Bucket: aws.String(fs.GetDefaultBucketName()),
-		// br的转发应该是匹配了downloads的path进行转发，必须要要有downloads/才能正常转发到存储
-		Key:                aws.String(path),
-		Body:               body,
-		ContentType:        aws.String(contentType),
-		ContentDisposition: aws.String("attachment; filename=" + filename),
-	}
-	if fs.publicRead {
-		uploadInput.ACL = aws.String("public-read") // br使用gcp的存储，不允许public
-	}
-	out, err := uploader.UploadWithContext(ctx, uploadInput)
+func (fs *FileStore) Upload(ctx context.Context, bucketName, filename string, body io.Reader) error {
+	_, err := fs.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(filename),
+		Body:   body,
+	})
 	if err != nil {
-		data = err.Error()
-		return "", err
+		logutil.CtxErrorF(ctx, "Couldn't upload file %v to %v:%v. Here's why: %v",
+			filename, bucketName, filename, err)
+	} else {
+		logutil.CtxInfoF(ctx, "successfully uploaded file %v to %v:%v", filename, bucketName, filename)
 	}
-	u, err := url.Parse(out.Location)
-	if err != nil {
-		return "", err
-	}
-	return u.Path, nil
+
+	return err
 }
 
 func (fs *FileStore) DownloadFileByURL(ctx context.Context, location string) ([]byte, error) {
-	downloader := s3manager.NewDownloader(fs.sess)
-	buf := aws.NewWriteAtBuffer(nil)
-	bucket, key, err := ParseBucketAndKeyFromURL(location)
+	bucketName, objectKey, err := ParseBucketAndKeyFromURL(location)
 	if err != nil {
 		return nil, err
 	}
-	_, err = downloader.DownloadWithContext(ctx, buf, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
+	output, err := fs.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
 	})
 	if err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	defer func() {
+		_ = output.Body.Close()
+	}()
+
+	// Read the object data into a byte slice
+	data, err := io.ReadAll(output.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
-func (fs *FileStore) DeleteFileByURL(ctx context.Context, location string) error {
-	bucket, key, err := ParseBucketAndKeyFromURL(location)
+func (fs *FileStore) DeleteFileByURL(ctx context.Context, url string) error {
+	bucket, key, err := ParseBucketAndKeyFromURL(url)
 	if err != nil {
 		return err
 	}
-	return fs.DeleteFile(bucket, key)
-}
-
-func (fs *FileStore) GetObject(ctx context.Context, bucket, key string) (*s3.GetObjectOutput, error) {
-	return fs.srv.GetObjectWithContext(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	})
+	return fs.DeleteFile(ctx, bucket, []string{key})
 }
 
 func (fs *FileStore) UploadExcelFileWithName(bucket, key string, filename string, body io.Reader) (string, error) {
@@ -207,12 +205,6 @@ func (fs *FileStore) UploadWithFileName(ctx context.Context, filename string, bo
 }
 
 func getBucketByFileName(filename string) string {
-	if setting.Env() == setting.ENV_UAT {
-		return "shopee-spx-uat"
-	}
-	if setting.Env() == setting.ENV_STAGING {
-		return "shopee-spx-staging"
-	}
 	for _, reStr := range BucketRepList {
 		re := regexp.MustCompile(reStr)
 		bucketType := BucketMap[reStr]

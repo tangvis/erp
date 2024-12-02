@@ -8,7 +8,7 @@ import (
 func TestSendHTML(t *testing.T) {
 	err := NewDefaultClient().SendTxtMail(
 		context.TODO(),
-		[]string{"shaofeng.lin@shopee.com"},
+		[]string{"shaofeng.lin@google.com"},
 		"test",
 		"wwoawewqehqw",
 	)
@@ -20,7 +20,7 @@ func TestSendHTML(t *testing.T) {
 func TestSendMailWithFilepath(t *testing.T) {
 	err := NewDefaultClient().SendMailWithFilepath(
 		context.TODO(),
-		[]string{"shaofeng.lin@shopee.com"},
+		[]string{"shaofeng.lin@google.com"},
 		"test",
 		"wwoawewqehqw",
 		"",

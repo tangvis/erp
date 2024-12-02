@@ -1,4 +1,4 @@
-package category
+package product
 
 import (
 	"net/http"
@@ -38,7 +38,7 @@ func (c *Controller) URLPatterns() []engine.Router {
 		// brand
 		engine.NewRouter(http.MethodPost, "/brand/add", c.engine.JSONAuth(c.BrandAdd)),
 		engine.NewRouter(http.MethodPost, "/brand/update", c.engine.JSONAuth(c.BrandUpdate)),
-		engine.NewRouter(http.MethodGet, "/brand/list", c.engine.JSONAuth(c.BrandList)),
+		engine.NewRouter(http.MethodPost, "/brand/list", c.engine.JSONAuth(c.BrandList)),
 		engine.NewRouter(http.MethodPost, "/brand/delete", c.engine.JSONAuth(c.BrandRemove)),
 	}
 }
@@ -80,7 +80,11 @@ func (c *Controller) BrandAdd(ctx engine.Context, userInfo *common.UserInfo) (an
 }
 
 func (c *Controller) BrandList(ctx engine.Context, userInfo *common.UserInfo) (any, error) {
-	return c.brandAPP.List(ctx.GetCtx(), userInfo)
+	var req define.ListBrandRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		return nil, err
+	}
+	return c.brandAPP.List(ctx.GetCtx(), &req, userInfo)
 }
 
 func (c *Controller) BrandUpdate(ctx engine.Context, userInfo *common.UserInfo) (any, error) {

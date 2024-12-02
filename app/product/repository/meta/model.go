@@ -7,13 +7,17 @@ import (
 )
 
 type BrandTab struct {
-	Name        string
-	Desc        string
-	URL         string // URLTab
-	BrandStatus define.Status
-	CreateBy    string // email of creator
+	Name        string        `al:"品牌名"`
+	Desc        string        `al:"品牌描述"`
+	URL         string        // URLTab `al:"图片链接"`
+	BrandStatus define.Status `al:"状态"`
+	CreateBy    string        // email of creator
 
 	mysql.BaseModel
+}
+
+func (tab *BrandTab) TableName() string {
+	return "brand_tab"
 }
 
 type CategoryTab struct {

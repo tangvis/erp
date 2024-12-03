@@ -16,7 +16,7 @@ func AutoWrapContext(ctx context.Context, traceID string) context.Context {
 }
 
 func ForkContext(ctx context.Context) context.Context {
-	return AutoWrapContext(context.Background(), GetTranceID(ctx))
+	return AutoWrapContext(context.Background(), GetTraceID(ctx))
 }
 
 func GenerateTrace() string {

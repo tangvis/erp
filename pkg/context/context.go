@@ -23,6 +23,6 @@ func GenerateTrace() string {
 	return uuid.NewString()
 }
 
-func GetTranceID(ctx context.Context) string {
+func GetTraceID(ctx context.Context) string {
 	return ctx.Value(TraceIDKey).(string)
 }

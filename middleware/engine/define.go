@@ -15,8 +15,8 @@ type HTTPAPIJSONUserHandler func(ctx Context, userInfo *common.UserInfo) (any, e
 type RawHandler func(ctx *gin.Context) error
 
 type JSONResponse struct {
-	Code     int    `json:"code"`
-	Message  string `json:"message"`
-	Data     any    `json:"data"`
-	TranceID string `json:"trance_id"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
+	TraceID string `json:"trace_id"`
 }

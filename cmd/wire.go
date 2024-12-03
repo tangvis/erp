@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"net/http"
+
 	"github.com/tangvis/erp/access"
 	pingHTTP "github.com/tangvis/erp/access/ping"
 	"github.com/tangvis/erp/access/product"
@@ -20,7 +22,6 @@ import (
 	getter "github.com/tangvis/erp/conf/config"
 	"github.com/tangvis/erp/middleware"
 	"github.com/tangvis/erp/middleware/engine"
-	"net/http"
 )
 
 type application struct {
@@ -56,6 +57,7 @@ func initializeApplication(
 			new(*dependence),
 			"DB",
 			"Cache",
+			"OpenAI",
 		),
 		wire.Struct(new(application), "*"),
 	)

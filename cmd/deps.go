@@ -3,22 +3,26 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
+
 	"github.com/tangvis/erp/agent/mysql"
+	"github.com/tangvis/erp/agent/openai"
 	"github.com/tangvis/erp/agent/redis"
 	getter "github.com/tangvis/erp/conf/config"
 	logutil "github.com/tangvis/erp/pkg/log"
-	"time"
 )
 
 type dependence struct {
-	DB    *mysql.DB
-	Cache redis.Cache
+	DB     *mysql.DB
+	Cache  redis.Cache
+	OpenAI openai.API
 }
 
 func newDependence() (*dependence, error) {
 	ret := &dependence{}
 	ret.initDB()
 	ret.initCache()
+	ret.initOpenAI()
 	return ret, nil
 }
 
@@ -46,6 +50,13 @@ func (d *dependence) initCache() {
 		panic(err)
 	}
 	d.Cache = redis.NewCache(cacheConfig)
+}
+
+func (d *dependence) initOpenAI() {
+	if getter.Config == nil {
+		panic("initOpenAI config not init yet")
+	}
+	d.OpenAI = openai.NewGPTClient(getter.Config.GetOpenAIToken())
 }
 
 func initLogger() {

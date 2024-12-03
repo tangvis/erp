@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+
+	"github.com/tangvis/erp/agent/openai"
 	actionLogDefine "github.com/tangvis/erp/app/system/actionlog/define"
 	actionLog "github.com/tangvis/erp/app/system/actionlog/service"
 
@@ -15,6 +17,7 @@ import (
 type BrandImpl struct {
 	repo      meta.Repo
 	actionLog actionLog.APP
+	openAI    openai.API
 }
 
 func (b BrandImpl) Add(ctx context.Context, user *common.UserInfo, req *define.AddBrandRequest) (*define.Brand, error) {
@@ -103,9 +106,11 @@ func (b BrandImpl) Remove(ctx context.Context, user *common.UserInfo, id ...uint
 func NewBrandImpl(
 	repo meta.Repo,
 	actionLog actionLog.APP,
+	openAI openai.API,
 ) service.Brand {
 	return &BrandImpl{
 		repo:      repo,
 		actionLog: actionLog,
+		openAI:    openAI,
 	}
 }

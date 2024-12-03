@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	"github.com/sashabaranov/go-openai"
+	"io"
 )
 
 const (
@@ -40,4 +41,16 @@ func (g *GPTClient) SimpleChat(ctx context.Context, text string, model string) (
 
 func (g *GPTClient) SimpleChat4oMini(ctx context.Context, text string) (string, error) {
 	return g.SimpleChat(ctx, text, openai.GPT4oMini)
+}
+
+func (g *GPTClient) Caption(ctx context.Context, reader io.Reader) (string, error) {
+	resp, err := g.client.CreateTranscription(ctx, openai.AudioRequest{
+		Model:  openai.Whisper1,
+		Reader: reader,
+		Format: openai.AudioResponseFormatSRT,
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp.Text, nil
 }

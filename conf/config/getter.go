@@ -41,6 +41,7 @@ type Getter interface {
 	GetMiddleWareConfig() (MiddlewareConfig, error)
 	GetEnableResponseTraceID() bool
 	GetEnableLogRequest() bool
+	GetOpenAIToken() string
 }
 
 type configGetter struct {
@@ -113,4 +114,8 @@ func (c configGetter) GetMiddleWareConfig() (MiddlewareConfig, error) {
 
 func (c configGetter) GetEnableLogRequest() bool {
 	return c.viper.GetBool("middleware.logRequest")
+}
+
+func (c configGetter) GetOpenAIToken() string {
+	return c.viper.GetString("openai.token")
 }

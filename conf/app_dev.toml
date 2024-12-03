@@ -26,3 +26,6 @@ publicQpsLimit = 10000
 console_output = false
 file_path = ""
 file_name = ""
+
+[openai]
+token = "openaitesttoken"

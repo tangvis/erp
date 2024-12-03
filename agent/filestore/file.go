@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
 	"net/url"
@@ -28,6 +29,7 @@ type FileStore struct {
 	client        *s3.Client
 	defaultBucket string
 	publicRead    bool
+	sess          *session.Session
 }
 
 // NewFileStore create new s3 filestore.
@@ -193,14 +195,14 @@ func (fs *FileStore) UploadWithFileName(ctx context.Context, filename string, bo
 	}
 	out, err := uploader.UploadWithContext(ctx, uploadInput)
 	if err != nil {
-		data = err.Error()
+		//data := err.Error()
 		return "", err
 	}
 	// todo 前端鉴权以后可以删除替换host逻辑
 	UnAuthHost := LiveUSSHttpHost
-	if setting.IsNonLiveEnv() {
-		UnAuthHost = NonLiveUSSHttpHost
-	}
+	//if setting.IsNonLiveEnv() {
+	//	UnAuthHost = NonLiveUSSHttpHost
+	//}
 	return setHostname(out.Location, UnAuthHost)
 }
 

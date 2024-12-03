@@ -14,8 +14,8 @@ type Options struct {
 
 const (
 	S3Operation        = "S3Operation"
-	NonLiveUSSHttpHost = "spx-uss-proxy.ssc.test.shopee.io"
-	LiveUSSHttpHost    = "spx-sg.uss.shopee.io"
+	NonLiveUSSHttpHost = ""
+	LiveUSSHttpHost    = ""
 )
 
 var (
@@ -52,7 +52,7 @@ var BucketMap = map[string]BucketType{
 }
 
 var BucketNameMap = map[BucketType]string{
-	TempBucket:    "spx-temp-data",
-	PermanentDate: "spx-perm",
-	Permanent:     "spx-perm-data",
+	TempBucket:    "linus-temp-data",
+	PermanentDate: "linus-perm",
+	Permanent:     "linus-perm-data",
 }

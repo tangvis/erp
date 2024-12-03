@@ -19,8 +19,8 @@ func NewDefaultClient() Client {
 		Server:        "smtp.google.com",
 		Port:          "587",
 		ServerTimeout: 10,
-		FeedbackName:  "SPX System Email",
-		FeedbackEmail: "stats.spx@google.com",
+		FeedbackName:  "System Email",
+		FeedbackEmail: "user@google.com",
 	})
 }
 
